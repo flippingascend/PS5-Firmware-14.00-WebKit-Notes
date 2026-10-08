@@ -1,0 +1,450 @@
+09:33:41 /report {"id":"_start","ua":"Mozilla/5.0 (PlayStation; PlayStation 5/14.00) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15","text":"lb_u"}
+09:33:42 /result {"tag":"d","msg":"CASE A5-32 forward chars then lookbehind got=[0,\"abc\"]"}
+09:33:42 /result {"tag":"d","msg":"CASE A4-07 lazy .* inside a capture got=[4,\"x\",\"\"]"}
+09:33:42 /result {"tag":"d","msg":"CASE B1-04 C3 with an optional instead of a star got=null verdict=PRE-FIX"}
+09:33:42 /result {"tag":"y","msg":"CASE B2-02 same, one more unit of room got=[1,\"\\ude00\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:42 /result {"tag":"d","msg":"CASE A5-07 backref in a lookbehind to a forward capture got=[0,\"ax\",\"a\"]"}
+09:33:42 /result {"tag":"d","msg":"CASE A5-19 lookahead inside a lookbehind got=[2,\"c\"]"}
+09:33:42 /result {"tag":"d","msg":"CASE A2-13 negated fixed count 2, one pair got=[3,\"x\"]"}
+09:33:42 /result {"tag":"d","msg":"CASE A5-29 negated word boundary got=[3,\"c\"]"}
+09:33:42 /result {"tag":"d","msg":"CASE A5-37 negated lookbehind, second word got=[4,\"b\"]"}
+09:33:42 /result {"tag":"d","msg":"CASE A1-19 property, non-BMP, dot got=null verdict=PRE-FIX"}
+09:33:42 /result {"tag":"y","msg":"CASE C1-14 lookahead for the trail then a dot got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:42 /result {"tag":"y","msg":"CTRL D1-08 the lone trail in the pattern got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:42 /result {"tag":"y","msg":"CASE C1-16 the trail inside a broader class got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:42 /result {"tag":"y","msg":"CASE B3-12 poison followed by a fixed count got=[1,\"\\ude00bc\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:42 /result {"tag":"d","msg":"CASE A1-10 same, only one pair present got=null"}
+09:33:42 /result {"tag":"d","msg":"TEST L1-05 sticky lookbehind then dot, inside li=1 got=[1,\"\\ude00\",\"\\ude00\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE A1-15 negated class twice, two pairs got=[4,\"x\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE B1-03 C3 under the v flag got=null verdict=PRE-FIX"}
+09:33:43 /result {"tag":"d","msg":"CASE A4-09 star class at the end got=[2,\"\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE A5-04 star over an alternation got=[3,\"c\",\"a\",\"a\"]"}
+09:33:43 /result {"tag":"y","msg":"CTRL D1-01 sticky dot inside a pair got=[0,\"\\ud83d\\ude00\"] notes=DRIFT measured [1,\"\\ude00\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE B2-05 control: same capture, no backreference got=[2,\"\\ude00x\",\"\\ude00\"]"}
+09:33:43 /result {"tag":"y","msg":"CASE C1-10 trail in a two-pair subject got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:43 /result {"tag":"y","msg":"CASE C1-11 trail after an ascii char got=[2,\"\\ude00\"] notes=N1 INDEX 2 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:43 /result {"tag":"d","msg":"CASE A2-09 two different astral literals got=[4,\"x\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE C1-13 the whole pair captured got=[0,\"\\ud83d\\ude00\",\"\\ud83d\\ude00\"]"}
+09:33:43 /result {"tag":"y","msg":"CASE B2-09 the broad class path got=[1,\"\\ude00\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:43 /result {"tag":"d","msg":"CASE A5-13 group with a fixed count 2 got=[4,\"c\",\"ab\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE A2-11 count 2 inside a capture got=null verdict=PRE-FIX"}
+09:33:43 /result {"tag":"y","msg":"CASE C1-17 trail with a quantifier got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:43 /result {"tag":"y","msg":"CASE B3-01 branch 1 poisoned, branch 2 plain got=[1,\"\\ude00\\ude00\",\"\\ude00\",\"<undefined>\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:43 /result {"tag":"d","msg":"CASE A1-01 class with a non-BMP alternative got=null verdict=PRE-FIX"}
+09:33:43 /result {"tag":"c","msg":"\n=== A5: upstream regexp-interpreter-lookbehind.js (45) ==="}
+09:33:43 /result {"tag":"d","msg":"CASE A5-31 end anchor inside a lookbehind got=[2,\"\"]"}
+09:33:43 /result {"tag":"y","msg":"CASE L1-02 sticky class, lastIndex inside the pair got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:43 /result {"tag":"d","msg":"TEST L1-03 sticky at the pair start li=0 got=[0,\"\\ud83d\\ude00\"]"}
+09:33:43 /result {"tag":"y","msg":"[WIN] SUMMARY: 25 of 183 authoritative cases PRE-FIX. 53 case(s) fired an oracle."}
+09:33:43 /result {"tag":"c","msg":"\n=== A2: upstream regexp-interpreter-lookbehind-fixed-count-non-bmp-character.js (13) ==="}
+09:33:43 /result {"tag":"d","msg":"CASE B3-13 poison inside a bounded quantifier got=[2,\"bc\",\"<undefined>\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE A1-09 non-BMP range with a fixed count 2 got=[4,\"x\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE A5-34 same with a negated lookbehind got=null"}
+09:33:43 /result {"tag":"d","msg":"CASE A5-35 negative lookbehind mid pattern got=[0,\"xcd\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE B3-17 poison wrapped in a lookbehind got=[3,\"x\",\"\\ude00\"]"}
+09:33:43 /result {"tag":"y","msg":"CASE B3-18 poison in the forward part of a mixed pattern got=[1,\"\\ude00b\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:43 /result {"tag":"y","msg":"CASE B4-01 poisoned group twice got=[1,\"\\ude00\\ude00\\ude00\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:43 /result {"tag":"y","msg":"CASE B4-03 poisoned group bounded 2 to 4 got=[1,\"\\ude00\\ude00\\ude00\\ude00\\ude00\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:43 /result {"tag":"c","msg":"\n=== B4: amplification - repeat the poisoned shape ==="}
+09:33:43 /result {"tag":"d","msg":"CASE C1-04 lone trail anchored at the start got=null"}
+09:33:43 /result {"tag":"y","msg":"CASE C1-05 lone trail anchored at the end got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:43 /result {"tag":"y","msg":"CTRL D1-03 sticky lookbehind then a dot got=null notes=DRIFT measured [1,\"\\ude00\",\"\\ude00\"]"}
+09:33:43 /result {"tag":"y","msg":"CASE L1-11 global poisoned backreference got=[1,\"\\ude00\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:43 /result {"tag":"y","msg":"CASE C1-08 trail twice as a group got=[1,\"\\ude00\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:43 /result {"tag":"d","msg":"CASE A2-08 count 2 wrapped in literals got=null verdict=PRE-FIX"}
+09:33:43 /result {"tag":"d","msg":"[info] SELFTEST index-vs-text detector: FIRED (N8 group[0] TEXT != substring(1,2))   REQUIRED: FIRED"}
+09:33:43 /result {"tag":"d","msg":"CASE A2-06 count 2, second char not the same got=null"}
+09:33:43 /result {"tag":"d","msg":"TEST A5-39 upstream: global lookbehind, li=0 li=0 got=[2,\"b\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE A5-10 named capture plus dot-escape got=[2,\"14\",\"3\"]"}
+09:33:43 /result {"tag":"y","msg":"CASE C1-15 the trail as a class member got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:43 /result {"tag":"d","msg":"CASE C1-19 lead in the pattern as a control got=null"}
+09:33:43 /result {"tag":"d","msg":"CASE C1-20 the pair as a class operand got=[0,\"\\ud83d\\ude00\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE A5-25 anchored lookbehind got=[2,\"c\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE A1-04 wrong emoji must not match got=null"}
+09:33:43 /result {"tag":"d","msg":"CASE B3-07 the poison inside a lookahead, with an escape branch got=[0,\"\",\"<undefined>\",\"\\ud83d\\ude00\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE B3-11 poison inside a capture got=[2,\"bc\",\"b\",\"<undefined>\",\"b\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE A5-27 end anchored lookbehind with ml got=[2,\"\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE A1-06 negated property escape got=[2,\"b\"] verdict=PRE-FIX"}
+09:33:43 /result {"tag":"d","msg":"CASE A5-30 start anchor inside a lookbehind got=[0,\"x\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE L1-04 sticky past the pair got=null"}
+09:33:43 /result {"tag":"y","msg":"CASE L1-05 sticky lookbehind then dot, inside got=[1,\"\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:43 /result {"tag":"d","msg":"[info] SELFTEST mid-pair detector, unicode regexp: FIRED (N1 INDEX 1 MID-PAIR~N1 END 1 MID-PAIR)   REQUIRED: FIRED"}
+09:33:43 /result {"tag":"d","msg":"TEST L1-07 sticky trail then a suffix, inside li=1 got=[1,\"\\ude00x\",\"\\ude00\"]"}
+09:33:43 /result {"tag":"d","msg":"TEST L1-08 global dot over a pair li=0 got=[0,\"\\ud83d\\ude00\"]"}
+09:33:43 /result {"tag":"y","msg":"[ORACLE] D1-01 sticky dot inside a pair :: DRIFT measured [1,\"\\ude00\"]"}
+09:33:43 /result {"tag":"c","msg":"\n=== C1: where does a mid-pair forward match come from? ==="}
+09:33:43 /result {"tag":"y","msg":"CASE B2-01 capture the trail via a forward mid-pair match got=[1,\"\\ude00\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:43 /result {"tag":"c","msg":"\n=== D1: regression controls carried from the 09:10 run ==="}
+09:33:43 /result {"tag":"d","msg":"CTRL D1-07 the forward twin that must fail got=null"}
+09:33:43 /result {"tag":"d","msg":"CASE A2-03 fixed count 3 got=null verdict=PRE-FIX"}
+09:33:43 /result {"tag":"d","msg":"CTRL D1-11 C3 lookbehind via String.match (was E7-12) got=null"}
+09:33:43 /result {"tag":"y","msg":"CTRL D1-10 split cuts the pair in two (was E7-05) got=\\ud83d\\ude00 notes=DRIFT measured \\ud83d|\\ude00"}
+09:33:43 /result {"tag":"d","msg":"CASE A5-28 word boundary before the lookbehind got=[4,\"c\"]"}
+09:33:43 /result {"tag":"y","msg":"[ORACLE] B2-04 same with a trailing literal :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:43 /result {"tag":"d","msg":"CASE A5-24 lookbehind then astral then letter got=[3,\"b\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE A5-26 anchored lookbehind with ml got=[4,\"c\"]"}
+09:33:43 /result {"tag":"y","msg":"CASE B3-09 poison then a class got=[1,\"\\ude00bc\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:43 /result {"tag":"d","msg":"CASE A3-09 negated lookbehind for a lone lead got=[0,\"\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE A1-07 negated property escape, ascii got=[1,\"b\"]"}
+09:33:43 /result {"tag":"d","msg":"CASE A1-08 another non-BMP property got=null verdict=PRE-FIX"}
+09:33:43 /result {"tag":"y","msg":"CASE A4-02 same with a leading ascii char got=[2,\"\"] notes=N1 INDEX 2 MID-PAIR~N1 END 2 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[0] END MID-PAIR verdict=PRE-FIX"}
+09:33:43 /result {"tag":"d","msg":"CASE A1-12 two class steps in a lookbehind got=null verdict=PRE-FIX"}
+09:33:43 /result {"tag":"y","msg":"CASE L1-06 sticky trail, inside the pair got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:43 /result {"tag":"y","msg":"CASE C1-01 lone trail in the pattern got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:43 /result {"tag":"y","msg":"CASE C1-03 lone trail then a dot got=[1,\"\\ude00Z\",\"\\ude00\",\"Z\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:43 /result {"tag":"d","msg":"CASE B1-05 C3 with a plus (oracle only) got=null"}
+09:33:43 /result {"tag":"d","msg":"CASE A2-01 fixed count 2 over a non-BMP literal got=null verdict=PRE-FIX"}
+09:33:43 /result {"tag":"d","msg":"CASE C1-06 a class step then the trail got=null"}
+09:33:43 /result {"tag":"d","msg":"CASE B2-07 control: capture begins on a bare trail got=[0,\"\\ude00\\ude00\",\"\\ude00\"]"}
+09:33:44 /result {"tag":"d","msg":"CASE A5-08 astral capture then backref got=[4,\"x\",\"\\ud83d\\ude00\"]"}
+09:33:44 /result {"tag":"y","msg":"CASE C1-09 trail then trail got=[1,\"\\ude00\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:44 /result {"tag":"d","msg":"CASE L1-12 sticky backref at the pair start got=null"}
+09:33:44 /result {"tag":"y","msg":"[ORACLE] D1-10 split cuts the pair in two (was E7-05) :: DRIFT measured \\ud83d|\\ude00"}
+09:33:44 /result {"tag":"y","msg":"[PF] A2-08 count 2 wrapped in literals got=null want=[6,\"x\"]"}
+09:33:44 /result {"tag":"d","msg":"CASE A5-21 word boundary inside a lookbehind got=[11,\"able\"]"}
+09:33:44 /result {"tag":"y","msg":"CASE B3-03 optional poisoned group then a literal got=[1,\"\\ude00\\ude00Y\",\"\\ude00\",\"Y\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:44 /result {"tag":"y","msg":"CASE B3-06 the poison inside a lookahead got=[1,\"\\ude00\",\"\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR~N1 group[2] START MID-PAIR"}
+09:33:44 /result {"tag":"c","msg":"\n=== A3: upstream regexp-interpreter-lookbehind-surrogate-half.js (11) ==="}
+09:33:44 /result {"tag":"c","msg":"\n=== LASTINDEX: sticky and global entry points, with the position written back ==="}
+09:33:44 /result {"tag":"d","msg":"CASE A1-05 property escape in a lookbehind got=null verdict=PRE-FIX"}
+09:33:44 /result {"tag":"d","msg":"CASE L1-03 sticky at the pair start got=[0,\"\\ud83d\\ude00\"]"}
+09:33:44 /result {"tag":"c","msg":"\n=== B1: the C3 upstream oracle and its astral twin ==="}
+09:33:44 /result {"tag":"d","msg":"CASE B1-01 C3 own test: backref star inside a lookbehind got=null verdict=PRE-FIX"}
+09:33:44 /result {"tag":"y","msg":"[ORACLE] C1-11 trail after an ascii char :: N1 INDEX 2 MID-PAIR | N1 group[0] START MID-PAIR"}
+09:33:44 /result {"tag":"d","msg":"[info] SELFTEST inverted-range detector: FIRED (N4 INVERTED group[0]=[2,1]~N5 group[0] TEXT 2 != RANGE -1)   REQUIRED: FIRED"}
+09:33:44 /result {"tag":"d","msg":"CASE L1-08 global dot over a pair got=[0,\"\\ud83d\\ude00\"]"}
+09:33:44 /result {"tag":"d","msg":"TEST L1-09 global trail over a pair li=0 got=[1,\"\\ude00\"]"}
+09:33:44 /result {"tag":"y","msg":"[ORACLE] D1-02 sticky broad class inside a pair :: DRIFT measured [1,\"\\ude00\"]"}
+09:33:44 /result {"tag":"d","msg":"CASE A5-01 two captures in a lookbehind got=[3,\"c\",\"a\",\"b\"]"}
+09:33:44 /result {"tag":"y","msg":"[PF] A1-18 non-BMP then dot in a lookbehind got=null want=[4,\"x\"]"}
+09:33:44 /result {"tag":"d","msg":"CASE A2-04 count 2 with a prefix character got=null"}
+09:33:44 /result {"tag":"d","msg":"CTRL D1-04 the F2 prefix in explicit form got=[2,\"b\"]"}
+09:33:44 /result {"tag":"y","msg":"[PF] A2-02 same under the v flag got=null want=[4,\"x\"]"}
+09:33:44 /result {"tag":"y","msg":"CASE B2-10 capture the trail, then a group got=[1,\"\\ude00\\ude00\",\"\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:44 /result {"tag":"c","msg":"\n=== A1: upstream regexp-interpreter-lookbehind-character-class-non-bmp.js (19) ==="}
+09:33:44 /result {"tag":"y","msg":"[ORACLE] A4-01 end anchor then .* in a lookbehind :: N1 INDEX 1 MID-PAIR | N1 END 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[0] END MID-PAIR"}
+09:33:44 /result {"tag":"d","msg":"CASE A5-15 non-capturing group under a plus got=[5,\"c\"]"}
+09:33:44 /result {"tag":"d","msg":"[info] SELFTEST foreign-unit detector: FIRED (N8 group[0] TEXT != substring(0,1)~N2 capture[0] HAS U+0051 NOT IN INPUT)   REQUIRED: FIRED"}
+09:33:44 /result {"tag":"y","msg":"CTRL D1-12 matchAll offsets of $.* (was E8-04) got=[] notes=DRIFT measured [1,2]"}
+09:33:44 /result {"tag":"d","msg":"CASE A3-04 lookbehind for a lone trail, bare got=[1,\"x\"]"}
+09:33:44 /result {"tag":"d","msg":"CASE A3-07 one class step, bare trail got=[1,\"x\"]"}
+09:33:44 /result {"tag":"d","msg":"CASE A5-33 forward char then lookbehind got=[1,\"ab\"]"}
+09:33:44 /result {"tag":"d","msg":"CASE A5-36 lookbehind in the second alternative got=[0,\"abc\"]"}
+09:33:44 /result {"tag":"d","msg":"CASE A1-11 anchor plus a class in a lookbehind got=null verdict=PRE-FIX"}
+09:33:44 /result {"tag":"y","msg":"[PF] B1-01 C3 own test: backref star inside a lookbehind got=null want=[3,\"b\",\"a\"]"}
+09:33:44 /result {"tag":"d","msg":"CASE A5-43 alternation in a lookbehind got=null verdict=PRE-FIX"}
+09:33:44 /result {"tag":"d","msg":"TEST L1-06 sticky trail, inside the pair li=1 got=[1,\"\\ude00\"]"}
+09:33:44 /result {"tag":"y","msg":"[PF] B1-03 C3 under the v flag got=null want=[3,\"b\",\"a\"]"}
+09:33:44 /result {"tag":"d","msg":"CASE A5-44 alternation with an empty branch got=[0,\"x\"]"}
+09:33:44 /result {"tag":"y","msg":"[ORACLE] B3-04 lazy optional poisoned group :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:44 /result {"tag":"d","msg":"[info] Reading: N2 = a code unit that is NOT in the input appeared in a match = OUT-OF-BOUNDS READ."}
+09:33:44 /result {"tag":"y","msg":"CTRL D1-02 sticky broad class inside a pair got=[0,\"\\ud83d\\ude00\"] notes=DRIFT measured [1,\"\\ude00\"]"}
+09:33:44 /result {"tag":"y","msg":"[PF] A1-12 two class steps in a lookbehind got=null want=[3,\"x\"]"}
+09:33:44 /result {"tag":"y","msg":"CASE B2-04 same with a trailing literal got=[1,\"\\ude00\\ude00x\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:44 /result {"tag":"y","msg":"[ORACLE] D1-06 lead captured, then backref :: N1 group[1] END MID-PAIR"}
+09:33:44 /result {"tag":"d","msg":"[info] Reading: N14 = a case slower than 10 ms = the runaway loop a huge matchSize would cause."}
+09:33:44 /result {"tag":"c","msg":"\n=== SELFTEST: prove the oracle detectors can actually fire ==="}
+09:33:44 /result {"tag":"d","msg":"CASE B2-11 capture the lead, backref (control) got=null"}
+09:33:44 /result {"tag":"d","msg":"TEST A5-40 upstream: global lookbehind, li=1 li=1 got=[2,\"b\"]"}
+09:33:44 /result {"tag":"y","msg":"[PF] A2-12 negated fixed count 2 got=[4,\"x\"] want=null"}
+09:33:44 /result {"tag":"y","msg":"[ORACLE] B4-04 nested poison :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR | N1 group[2] START MID-PAIR"}
+09:33:44 /result {"tag":"d","msg":"CASE A1-03 same under the v flag got=null verdict=PRE-FIX"}
+09:33:44 /result {"tag":"d","msg":"CASE A5-22 lookahead inside a lookbehind, astral got=[2,\"b\"]"}
+09:33:44 /result {"tag":"y","msg":"[ORACLE] C1-03 lone trail then a dot :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:44 /result {"tag":"y","msg":"CASE B3-10 poison then a dot got=[1,\"\\ude00bc\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:44 /result {"tag":"y","msg":"[ORACLE] C1-05 lone trail anchored at the end :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR"}
+09:33:44 /result {"tag":"y","msg":"[PF] A4-01 end anchor then .* in a lookbehind got=[1,\"\"] want=[2,\"\"]"}
+09:33:45 /result {"tag":"c","msg":"\n=== B1: the C3 upstream oracle and its astral twin ==="}
+09:33:45 /result {"tag":"c","msg":"\n=== SELFTEST: prove the oracle detectors can actually fire ==="}
+09:33:45 /result {"tag":"c","msg":"\n=== C1: where does a mid-pair forward match come from? ==="}
+09:33:45 /result {"tag":"y","msg":"CTRL D1-03 sticky lookbehind then a dot got=null notes=DRIFT measured [1,\"\\ude00\",\"\\ude00\"]"}
+09:33:45 /result {"tag":"d","msg":"CASE A5-04 star over an alternation got=[3,\"c\",\"a\",\"a\"]"}
+09:33:45 /result {"tag":"c","msg":"\n=== A2: upstream regexp-interpreter-lookbehind-fixed-count-non-bmp-character.js (13) ==="}
+09:33:45 /result {"tag":"d","msg":"CASE A1-03 same under the v flag got=null verdict=PRE-FIX"}
+09:33:46 /result {"tag":"d","msg":"CASE B2-07 control: capture begins on a bare trail got=[0,\"\\ude00\\ude00\",\"\\ude00\"]"}
+09:33:46 /result {"tag":"y","msg":"CASE B2-09 the broad class path got=[1,\"\\ude00\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:46 /result {"tag":"d","msg":"CASE A1-02 same, plain ascii neighbour got=[2,\"b\"]"}
+09:33:46 /result {"tag":"d","msg":"CASE A2-04 count 2 with a prefix character got=null"}
+09:33:46 /result {"tag":"d","msg":"CASE A2-05 count 2 with one pair got=null"}
+09:33:46 /result {"tag":"d","msg":"CASE A2-07 count 2, reversed got=null"}
+09:33:46 /result {"tag":"d","msg":"CASE B2-03 same, plain ascii after got=null"}
+09:33:46 /result {"tag":"d","msg":"CASE B2-05 control: same capture, no backreference got=[2,\"\\ude00x\",\"\\ude00\"]"}
+09:33:46 /result {"tag":"y","msg":"CASE B2-08 the class path instead of a literal got=[1,\"\\ude00\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:46 /result {"tag":"d","msg":"CASE A2-09 two different astral literals got=[4,\"x\"]"}
+09:33:46 /result {"tag":"y","msg":"CASE B3-03 optional poisoned group then a literal got=[1,\"\\ude00\\ude00Y\",\"\\ude00\",\"Y\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:46 /result {"tag":"d","msg":"CASE A1-07 negated property escape, ascii got=[1,\"b\"]"}
+09:33:46 /result {"tag":"c","msg":"\n=== A5: upstream regexp-interpreter-lookbehind.js (45) ==="}
+09:33:46 /result {"tag":"d","msg":"CASE C1-19 lead in the pattern as a control got=null"}
+09:33:46 /result {"tag":"y","msg":"CASE A4-01 end anchor then .* in a lookbehind got=[1,\"\"] notes=N1 INDEX 1 MID-PAIR~N1 END 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[0] END MID-PAIR verdict=PRE-FIX"}
+09:33:46 /result {"tag":"c","msg":"\n=== D1: regression controls carried from the 09:10 run ==="}
+09:33:46 /result {"tag":"d","msg":"CASE A5-34 same with a negated lookbehind got=null"}
+09:33:46 /result {"tag":"d","msg":"CASE A1-18 non-BMP then dot in a lookbehind got=null verdict=PRE-FIX"}
+09:33:46 /result {"tag":"d","msg":"CASE A5-30 start anchor inside a lookbehind got=[0,\"x\"]"}
+09:33:46 /result {"tag":"y","msg":"CTRL D1-01 sticky dot inside a pair got=[0,\"\\ud83d\\ude00\"] notes=DRIFT measured [1,\"\\ude00\"]"}
+09:33:46 /result {"tag":"d","msg":"CASE A4-08 star on an astral literal got=[2,\"\"]"}
+09:33:46 /result {"tag":"d","msg":"CASE A5-37 negated lookbehind, second word got=[4,\"b\"]"}
+09:33:46 /result {"tag":"d","msg":"[info] SELFTEST foreign-unit detector: FIRED (N8 group[0] TEXT != substring(0,1)~N2 capture[0] HAS U+0051 NOT IN INPUT)   REQUIRED: FIRED"}
+09:33:46 /result {"tag":"y","msg":"CASE C1-02 lone trail captured got=[1,\"\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:46 /result {"tag":"d","msg":"CASE B1-02 the same with an emoji got=null verdict=PRE-FIX"}
+09:33:46 /result {"tag":"y","msg":"CASE C1-07 trail then a literal got=[1,\"\\ude00b\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:46 /result {"tag":"d","msg":"CASE A5-06 forward capture then backref in a lookbehind got=null"}
+09:33:46 /result {"tag":"d","msg":"CASE A5-15 non-capturing group under a plus got=[5,\"c\"]"}
+09:33:46 /result {"tag":"d","msg":"CASE A1-01 class with a non-BMP alternative got=null verdict=PRE-FIX"}
+09:33:46 /result {"tag":"y","msg":"CASE C1-15 the trail as a class member got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:46 /result {"tag":"y","msg":"CASE L1-09 global trail over a pair got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:46 /result {"tag":"d","msg":"CASE A3-05 class holding the lone trail got=[2,\"x\"] verdict=PRE-FIX"}
+09:33:46 /result {"tag":"d","msg":"CASE A3-08 one class step, astral got=null verdict=PRE-FIX"}
+09:33:46 /result {"tag":"d","msg":"CASE A5-23 lookahead with a class then astral got=[3,\"b\"]"}
+09:33:46 /result {"tag":"d","msg":"CASE A1-10 same, only one pair present got=null"}
+09:33:46 /result {"tag":"d","msg":"CASE A1-14 three steps, anchored got=null"}
+09:33:46 /result {"tag":"y","msg":"CASE B4-01 poisoned group twice got=[1,\"\\ude00\\ude00\\ude00\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:46 /result {"tag":"d","msg":"CASE A2-02 same under the v flag got=null verdict=PRE-FIX"}
+09:33:46 /result {"tag":"c","msg":"\n=== ESCALATION SUMMARY ==="}
+09:33:46 /result {"tag":"y","msg":"CASE C1-01 lone trail in the pattern got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:46 /result {"tag":"d","msg":"CASE A5-44 alternation with an empty branch got=[0,\"x\"]"}
+09:33:47 /result {"tag":"d","msg":"CASE B1-06 C3 with a bounded count 1 to 2 got=null"}
+09:33:47 /result {"tag":"d","msg":"CTRL D1-11 C3 lookbehind via String.match (was E7-12) got=null"}
+09:33:47 /result {"tag":"d","msg":"TEST L1-09 global trail over a pair li=0 got=[1,\"\\ude00\"]"}
+09:33:47 /result {"tag":"d","msg":"CASE A3-02 lookbehind for a lone lead, plain text got=[1,\"x\"]"}
+09:33:47 /result {"tag":"y","msg":"CASE B3-01 branch 1 poisoned, branch 2 plain got=[1,\"\\ude00\\ude00\",\"\\ude00\",\"<undefined>\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:47 /result {"tag":"d","msg":"CASE A1-05 property escape in a lookbehind got=null verdict=PRE-FIX"}
+09:33:47 /result {"tag":"y","msg":"CASE B3-08 poison then an alternation then a literal got=[1,\"\\ude00bc\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:47 /result {"tag":"y","msg":"CASE B3-10 poison then a dot got=[1,\"\\ude00bc\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:47 /result {"tag":"c","msg":"\n=== LASTINDEX: sticky and global entry points, with the position written back ==="}
+09:33:47 /result {"tag":"y","msg":"[PF] A5-43 alternation in a lookbehind got=null want=[2,\"x\"]"}
+09:33:47 /result {"tag":"d","msg":"CASE B3-16 forward reading after the poison got=null"}
+09:33:47 /result {"tag":"d","msg":"CASE A4-03 start anchor then .* got=[3,\"b\"]"}
+09:33:47 /result {"tag":"y","msg":"CASE L1-02 sticky class, lastIndex inside the pair got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:47 /result {"tag":"d","msg":"CASE A5-38 negated lookbehind for an astral char got=[5,\"b\"]"}
+09:33:47 /result {"tag":"d","msg":"CASE A5-36 lookbehind in the second alternative got=[0,\"abc\"]"}
+09:33:47 /result {"tag":"d","msg":"CASE A5-01 two captures in a lookbehind got=[3,\"c\",\"a\",\"b\"]"}
+09:33:47 /result {"tag":"d","msg":"CTRL D1-05 the combined single class form got=[2,\"b\"]"}
+09:33:47 /result {"tag":"d","msg":"[info] SELFTEST mid-pair detector, unicode regexp: FIRED (N1 INDEX 1 MID-PAIR~N1 END 1 MID-PAIR)   REQUIRED: FIRED"}
+09:33:47 /result {"tag":"d","msg":"CASE B1-03 C3 under the v flag got=null verdict=PRE-FIX"}
+09:33:47 /result {"tag":"d","msg":"CASE A5-05 two word chars got=[2,\"1\",\"a\",\"b\"]"}
+09:33:47 /result {"tag":"d","msg":"TEST L1-07 sticky trail then a suffix, inside li=1 got=[1,\"\\ude00x\",\"\\ude00\"]"}
+09:33:47 /result {"tag":"y","msg":"CASE B2-04 same with a trailing literal got=[1,\"\\ude00\\ude00x\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:47 /report {"id":"_start","ua":"Mozilla/5.0 (PlayStation; PlayStation 5/14.00) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15","text":"lb_u"}
+09:33:47 /result {"tag":"d","msg":"CASE A2-10 two astral literals, reversed got=null"}
+09:33:47 /result {"tag":"y","msg":"[PF] A2-02 same under the v flag got=null want=[4,\"x\"]"}
+09:33:47 /result {"tag":"d","msg":"CASE A5-16 nested lookbehind got=[2,\"b\"]"}
+09:33:47 /result {"tag":"y","msg":"CASE B3-04 lazy optional poisoned group got=[1,\"\\ude00\\ude00Y\",\"\\ude00\",\"Y\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:47 /result {"tag":"d","msg":"CASE C1-20 the pair as a class operand got=[0,\"\\ud83d\\ude00\"]"}
+09:33:47 /result {"tag":"d","msg":"CASE A5-26 anchored lookbehind with ml got=[4,\"c\"]"}
+09:33:47 /result {"tag":"d","msg":"CASE A5-24 lookbehind then astral then letter got=[3,\"b\"]"}
+09:33:47 /result {"tag":"d","msg":"CASE A5-31 end anchor inside a lookbehind got=[2,\"\"]"}
+09:33:47 /result {"tag":"y","msg":"[PF] A4-02 same with a leading ascii char got=[2,\"\"] want=[3,\"\"]"}
+09:33:47 /result {"tag":"d","msg":"TEST L1-01 sticky dot, lastIndex inside the pair li=1 got=[1,\"\\ude00\"]"}
+09:33:47 /result {"tag":"d","msg":"[info] d flag available: true   v flag available: true"}
+09:33:47 /result {"tag":"d","msg":"CASE B3-15 the same shape without u, control got=[1,\"\\ude00\\ude00\",\"\\ude00\",\"<undefined>\"]"}
+09:33:47 /result {"tag":"y","msg":"CASE B3-18 poison in the forward part of a mixed pattern got=[1,\"\\ude00b\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:47 /result {"tag":"y","msg":"[PF] B1-04 C3 with an optional instead of a star got=null want=[3,\"b\",\"a\"]"}
+09:33:47 /result {"tag":"y","msg":"CASE C1-03 lone trail then a dot got=[1,\"\\ude00Z\",\"\\ude00\",\"Z\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:47 /result {"tag":"y","msg":"CASE C1-05 lone trail anchored at the end got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:47 /result {"tag":"d","msg":"CASE A2-08 count 2 wrapped in literals got=null verdict=PRE-FIX"}
+09:33:47 /result {"tag":"y","msg":"[ORACLE] B3-12 poison followed by a fixed count :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:47 /result {"tag":"d","msg":"CASE A5-07 backref in a lookbehind to a forward capture got=[0,\"ax\",\"a\"]"}
+09:33:47 /result {"tag":"c","msg":"\n=== A4: upstream regexp-interpreter-lookbehind-greedy-class-backtrack-non-bmp.js (14) ==="}
+09:33:47 /result {"tag":"d","msg":"CASE A5-13 group with a fixed count 2 got=[4,\"c\",\"ab\"]"}
+09:33:47 /result {"tag":"y","msg":"CASE C1-16 the trail inside a broader class got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:47 /result {"tag":"y","msg":"[ORACLE] A4-02 same with a leading ascii char :: N1 INDEX 2 MID-PAIR | N1 END 2 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[0] END MID-PAIR"}
+09:33:47 /result {"tag":"y","msg":"[PF] A3-01 lookbehind for a lone lead, no context got=[1,\"\"] want=null"}
+09:33:47 /result {"tag":"d","msg":"CASE A3-09 negated lookbehind for a lone lead got=[0,\"\"]"}
+09:33:47 /result {"tag":"y","msg":"[ORACLE] B2-08 the class path instead of a literal :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:47 /result {"tag":"d","msg":"CASE A1-13 same, one pair for two steps got=null"}
+09:33:47 /result {"tag":"d","msg":"CASE B3-11 poison inside a capture got=[2,\"bc\",\"b\",\"<undefined>\",\"b\"]"}
+09:33:47 /result {"tag":"d","msg":"CASE B3-13 poison inside a bounded quantifier got=[2,\"bc\",\"<undefined>\"]"}
+09:33:47 /result {"tag":"y","msg":"CASE A4-02 same with a leading ascii char got=[2,\"\"] notes=N1 INDEX 2 MID-PAIR~N1 END 2 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[0] END MID-PAIR verdict=PRE-FIX"}
+09:33:47 /result {"tag":"d","msg":"TEST L1-03 sticky at the pair start li=0 got=[0,\"\\ud83d\\ude00\"]"}
+09:33:47 /result {"tag":"d","msg":"CASE A5-41 upstream: global lookbehind, li=2 got=[2,\"b\"]"}
+09:33:47 /result {"tag":"d","msg":"CASE A5-33 forward char then lookbehind got=[1,\"ab\"]"}
+09:33:47 /result {"tag":"d","msg":"CASE A5-02 alternation under a plus got=[5,\"c\",\"ab\"]"}
+09:33:47 /result {"tag":"d","msg":"CASE B4-05 poisoned lookbehind repeated got=[4,\"b\",\"\\ude00\"]"}
+09:33:47 /result {"tag":"d","msg":"CASE A5-45 alternation of different lengths got=[4,\"f\"]"}
+09:33:47 /result {"tag":"y","msg":"[ORACLE] B3-08 poison then an alternation then a literal :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:47 /result {"tag":"d","msg":"TEST L1-06 sticky trail, inside the pair li=1 got=[1,\"\\ude00\"]"}
+09:33:47 /result {"tag":"y","msg":"[PF] A1-05 property escape in a lookbehind got=null want=[2,\"b\"]"}
+09:33:47 /result {"tag":"y","msg":"CASE L1-06 sticky trail, inside the pair got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:47 /result {"tag":"d","msg":"CASE A5-11 greedy plus capture got=[4,\"c\",\"aaa\"]"}
+09:33:47 /result {"tag":"y","msg":"[ORACLE] D1-08 the lone trail in the pattern :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] B3-18 poison in the forward part of a mixed pattern :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"CASE C1-10 trail in a two-pair subject got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:48 /result {"tag":"d","msg":"CASE A5-14 group counted 1 to 2, lazy got=[4,\"c\",\"ab\"]"}
+09:33:48 /result {"tag":"d","msg":"CASE B2-06 control: no u flag, so no pair decoding got=[1,\"\\ude00\\ude00\",\"\\ude00\"]"}
+09:33:48 /result {"tag":"d","msg":"CASE A5-18 nested negated lookbehind got=[2,\"b\"]"}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] C1-02 lone trail captured :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"d","msg":"[info] SELFTEST inverted-range detector: FIRED (N4 INVERTED group[0]=[2,1]~N5 group[0] TEXT 2 != RANGE -1)   REQUIRED: FIRED"}
+09:33:48 /result {"tag":"d","msg":"CASE A5-22 lookahead inside a lookbehind, astral got=[2,\"b\"]"}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] B2-02 same, one more unit of room :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"c","msg":"\n=== B3: is the corrupted position visible after a FAILED backreference? ==="}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] C1-07 trail then a literal :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR"}
+09:33:48 /result {"tag":"d","msg":"CASE A5-21 word boundary inside a lookbehind got=[11,\"able\"]"}
+09:33:48 /result {"tag":"y","msg":"[PF] A3-05 class holding the lone trail got=[2,\"x\"] want=null"}
+09:33:48 /result {"tag":"d","msg":"TEST A5-39 upstream: global lookbehind, li=0 li=0 got=[2,\"b\"]"}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] B2-10 capture the trail, then a group :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"d","msg":"CASE A5-25 anchored lookbehind got=[2,\"c\"]"}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] B3-01 branch 1 poisoned, branch 2 plain :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"d","msg":"CASE A1-15 negated class twice, two pairs got=[4,\"x\"]"}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] B3-03 optional poisoned group then a literal :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"d","msg":"CASE L1-03 sticky at the pair start got=[0,\"\\ud83d\\ude00\"]"}
+09:33:48 /result {"tag":"y","msg":"CASE B4-03 poisoned group bounded 2 to 4 got=[1,\"\\ude00\\ude00\\ude00\\ude00\\ude00\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"CASE B4-04 nested poison got=[1,\"\\ude00\\ude00\",\"\\ude00\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR~N1 group[2] START MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"[WIN] SUMMARY: 25 of 183 authoritative cases PRE-FIX. 53 case(s) fired an oracle."}
+09:33:48 /result {"tag":"d","msg":"CASE C1-04 lone trail anchored at the start got=null"}
+09:33:48 /result {"tag":"d","msg":"CASE A1-19 property, non-BMP, dot got=null verdict=PRE-FIX"}
+09:33:48 /result {"tag":"d","msg":"CASE A2-06 count 2, second char not the same got=null"}
+09:33:48 /result {"tag":"d","msg":"[info] SLOW cases this run: 0. Section A wants come from Apple; everything else is oracle-only."}
+09:33:48 /result {"tag":"d","msg":"[info] SELFTEST same match, non-unicode regexp: SILENT   REQUIRED: SILENT"}
+09:33:48 /result {"tag":"y","msg":"CASE B2-02 same, one more unit of room got=[1,\"\\ude00\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"CASE L1-07 sticky trail then a suffix, inside got=[1,\"\\ude00x\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"d","msg":"TEST L1-08 global dot over a pair li=0 got=[0,\"\\ud83d\\ude00\"]"}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] B4-03 poisoned group bounded 2 to 4 :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"[PF] A1-19 property, non-BMP, dot got=null want=[5,\"x\"]"}
+09:33:48 /result {"tag":"y","msg":"[PF] A2-01 fixed count 2 over a non-BMP literal got=null want=[4,\"x\"]"}
+09:33:48 /result {"tag":"d","msg":"CASE B2-11 capture the lead, backref (control) got=null"}
+09:33:48 /result {"tag":"d","msg":"CASE B2-12 the sticky entry point, then the backreference got=null"}
+09:33:48 /result {"tag":"d","msg":"CASE A5-19 lookahead inside a lookbehind got=[2,\"c\"]"}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] C1-03 lone trail then a dot :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"d","msg":"CASE A1-06 negated property escape got=[2,\"b\"] verdict=PRE-FIX"}
+09:33:48 /result {"tag":"d","msg":"CASE A5-17 nested lookbehind, must fail got=null"}
+09:33:48 /result {"tag":"y","msg":"[PF] A2-12 negated fixed count 2 got=[4,\"x\"] want=null"}
+09:33:48 /result {"tag":"c","msg":"\n=== B2: FORWARD backreference whose capture begins on a TRAIL half ==="}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] B2-04 same with a trailing literal :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"d","msg":"CASE A1-12 two class steps in a lookbehind got=null verdict=PRE-FIX"}
+09:33:48 /result {"tag":"y","msg":"[PF] B1-01 C3 own test: backref star inside a lookbehind got=null want=[3,\"b\",\"a\"]"}
+09:33:48 /result {"tag":"d","msg":"TEST A5-40 upstream: global lookbehind, li=1 li=1 got=[2,\"b\"]"}
+09:33:48 /result {"tag":"d","msg":"CASE A4-09 star class at the end got=[2,\"\"]"}
+09:33:48 /result {"tag":"y","msg":"[WIN] ORACLES HIT: 53 case(s)"}
+09:33:48 /result {"tag":"d","msg":"TEST L1-05 sticky lookbehind then dot, inside li=1 got=[1,\"\\ude00\",\"\\ude00\"]"}
+09:33:48 /result {"tag":"y","msg":"[PF] A1-03 same under the v flag got=null want=[3,\"b\"]"}
+09:33:48 /result {"tag":"c","msg":"\n=== A3: upstream regexp-interpreter-lookbehind-surrogate-half.js (11) ==="}
+09:33:48 /result {"tag":"y","msg":"CTRL D1-09 replace inserts X inside the pair (was E7-03) got=\\ud83d\\ude00X notes=DRIFT measured \\ud83dX\\ude00"}
+09:33:48 /result {"tag":"y","msg":"CTRL D1-10 split cuts the pair in two (was E7-05) got=\\ud83d\\ude00 notes=DRIFT measured \\ud83d|\\ude00"}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] B4-01 poisoned group twice :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"[PF] A1-12 two class steps in a lookbehind got=null want=[3,\"x\"]"}
+09:33:48 /result {"tag":"d","msg":"TEST L1-10 sticky poisoned backreference, inside li=1 got=[1,\"\\ude00\\ude00\",\"\\ude00\"]"}
+09:33:48 /result {"tag":"y","msg":"[PF] A2-08 count 2 wrapped in literals got=null want=[6,\"x\"]"}
+09:33:48 /result {"tag":"y","msg":"[PF] A2-11 count 2 inside a capture got=null want=[4,\"x\",\"\\ud83d\\ude00\\ud83d\\ude00\"]"}
+09:33:48 /result {"tag":"y","msg":"CASE C1-18 trail inside a capture with a suffix got=[1,\"\\ude00Z\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"CASE B3-06 the poison inside a lookahead got=[1,\"\\ude00\",\"\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR~N1 group[2] START MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] C1-08 trail twice as a group :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"[PF] A4-01 end anchor then .* in a lookbehind got=[1,\"\"] want=[2,\"\"]"}
+09:33:48 /result {"tag":"d","msg":"CASE A5-39 upstream: global lookbehind, li=0 got=[2,\"b\"]"}
+09:33:48 /result {"tag":"d","msg":"CASE A5-40 upstream: global lookbehind, li=1 got=[2,\"b\"]"}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] B3-02 branch 1 poisoned, branch 2 two groups :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"d","msg":"CASE A4-10 plus class at the end got=[2,\"\"]"}
+09:33:48 /result {"tag":"d","msg":"CASE A2-01 fixed count 2 over a non-BMP literal got=null verdict=PRE-FIX"}
+09:33:48 /result {"tag":"d","msg":"CASE A5-43 alternation in a lookbehind got=null verdict=PRE-FIX"}
+09:33:48 /result {"tag":"d","msg":"CTRL D1-04 the F2 prefix in explicit form got=[2,\"b\"]"}
+09:33:48 /result {"tag":"y","msg":"CASE L1-05 sticky lookbehind then dot, inside got=[1,\"\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"CASE B2-01 capture the trail via a forward mid-pair match got=[1,\"\\ude00\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"CTRL D1-08 the lone trail in the pattern got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:48 /result {"tag":"d","msg":"CASE B1-05 C3 with a plus (oracle only) got=null"}
+09:33:48 /result {"tag":"y","msg":"[PF] A1-08 another non-BMP property got=null want=[2,\"b\"]"}
+09:33:48 /result {"tag":"y","msg":"CASE C1-11 trail after an ascii char got=[2,\"\\ude00\"] notes=N1 INDEX 2 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:48 /result {"tag":"d","msg":"CASE A2-11 count 2 inside a capture got=null verdict=PRE-FIX"}
+09:33:48 /result {"tag":"y","msg":"[PF] A1-18 non-BMP then dot in a lookbehind got=null want=[4,\"x\"]"}
+09:33:48 /result {"tag":"d","msg":"CASE A2-12 negated fixed count 2 got=[4,\"x\"] verdict=PRE-FIX"}
+09:33:48 /result {"tag":"y","msg":"CASE B2-10 capture the trail, then a group got=[1,\"\\ude00\\ude00\",\"\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"[PF] A2-03 fixed count 3 got=null want=[6,\"x\"]"}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] A4-01 end anchor then .* in a lookbehind :: N1 INDEX 1 MID-PAIR | N1 END 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[0] END MID-PAIR"}
+09:33:48 /result {"tag":"d","msg":"TEST L1-12 sticky backref at the pair start li=0 got=null"}
+09:33:48 /result {"tag":"y","msg":"CASE B3-09 poison then a class got=[1,\"\\ude00bc\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"[PF] A3-08 one class step, astral got=null want=[2,\"x\"]"}
+09:33:48 /result {"tag":"y","msg":"CASE B3-12 poison followed by a fixed count got=[1,\"\\ude00bc\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"d","msg":"CASE B3-14 poison repeated twice by a wrapper got=[0,\"\\ud83d\\ude00\\ude00bc\",\"<undefined>\"]"}
+09:33:48 /result {"tag":"d","msg":"TEST L1-02 sticky class, lastIndex inside the pair li=1 got=[1,\"\\ude00\"]"}
+09:33:48 /result {"tag":"d","msg":"[info] Reading: N1 alone is a wrong answer. N1 + a READ through the bad position is a primitive."}
+09:33:48 /result {"tag":"d","msg":"[info] Reading: N2 = a code unit that is NOT in the input appeared in a match = OUT-OF-BOUNDS READ."}
+09:33:48 /result {"tag":"d","msg":"CASE A2-03 fixed count 3 got=null verdict=PRE-FIX"}
+09:33:48 /result {"tag":"d","msg":"[info] Reading: N8 = the matched text and the reported index disagree."}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] D1-01 sticky dot inside a pair :: DRIFT measured [1,\"\\ude00\"]"}
+09:33:48 /result {"tag":"y","msg":"CTRL D1-06 lead captured, then backref got=[4,\"b\",\"\\ud83d\"] notes=N1 group[1] END MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"CASE C1-08 trail twice as a group got=[1,\"\\ude00\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:48 /report {"id":"_done","text":"lb_u_probe complete"}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] D1-03 sticky lookbehind then a dot :: DRIFT measured [1,\"\\ude00\",\"\\ude00\"]"}
+09:33:48 /result {"tag":"y","msg":"CTRL D1-12 matchAll offsets of $.* (was E8-04) got=[] notes=DRIFT measured [1,2]"}
+09:33:48 /result {"tag":"y","msg":"CASE C1-17 trail with a quantifier got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"CASE B3-05 both branches poisoned got=[1,\"\\ude00\\ude00\",\"\\ude00\",\"<undefined>\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"d","msg":"CASE A1-08 another non-BMP property got=null verdict=PRE-FIX"}
+09:33:48 /result {"tag":"y","msg":"CASE L1-10 sticky poisoned backreference, inside got=[1,\"\\ude00\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"c","msg":"\n=== B4: amplification - repeat the poisoned shape ==="}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] C1-11 trail after an ascii char :: N1 INDEX 2 MID-PAIR | N1 group[0] START MID-PAIR"}
+09:33:48 /result {"tag":"d","msg":"CASE A1-17 dot in a lookbehind, astral char got=[2,\"a\"]"}
+09:33:48 /result {"tag":"d","msg":"CASE A4-05 lazy plus class in a lookbehind got=[4,\"x\"]"}
+09:33:48 /result {"tag":"d","msg":"CASE B1-01 C3 own test: backref star inside a lookbehind got=null verdict=PRE-FIX"}
+09:33:48 /result {"tag":"d","msg":"CASE A5-08 astral capture then backref got=[4,\"x\",\"\\ud83d\\ude00\"]"}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] B3-05 both branches poisoned :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] D1-06 lead captured, then backref :: N1 group[1] END MID-PAIR"}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] D1-10 split cuts the pair in two (was E7-05) :: DRIFT measured \\ud83d|\\ude00"}
+09:33:48 /result {"tag":"y","msg":"[PF] A1-11 anchor plus a class in a lookbehind got=null want=[2,\"\"]"}
+09:33:48 /result {"tag":"d","msg":"CASE A5-20 negated lookahead inside a lookbehind got=[2,\"c\"]"}
+09:33:48 /result {"tag":"y","msg":"[ORACLE] B2-01 capture the trail via a forward mid-pair match :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:48 /result {"tag":"d","msg":"CASE B3-07 the poison inside a lookahead, with an escape branch got=[0,\"\",\"<undefined>\",\"\\ud83d\\ude00\"]"}
+09:33:49 /result {"tag":"d","msg":"TEST A5-41 upstream: global lookbehind, li=2 li=2 got=[2,\"b\"]"}
+09:33:49 /result {"tag":"d","msg":"CASE B3-17 poison wrapped in a lookbehind got=[3,\"x\",\"\\ude00\"]"}
+09:33:49 /result {"tag":"y","msg":"[ORACLE] C1-10 trail in a two-pair subject :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR"}
+09:33:49 /result {"tag":"y","msg":"[PF] B1-03 C3 under the v flag got=null want=[3,\"b\",\"a\"]"}
+09:33:49 /result {"tag":"d","msg":"CTRL D1-07 the forward twin that must fail got=null"}
+09:33:49 /result {"tag":"d","msg":"CASE A5-10 named capture plus dot-escape got=[2,\"14\",\"3\"]"}
+09:33:49 /result {"tag":"d","msg":"CASE L1-08 global dot over a pair got=[0,\"\\ud83d\\ude00\"]"}
+09:33:49 /result {"tag":"d","msg":"CASE C1-13 the whole pair captured got=[0,\"\\ud83d\\ude00\",\"\\ud83d\\ude00\"]"}
+09:33:49 /result {"tag":"d","msg":"CASE A2-13 negated fixed count 2, one pair got=[3,\"x\"]"}
+09:33:49 /result {"tag":"d","msg":"CASE A5-27 end anchored lookbehind with ml got=[2,\"\"]"}
+09:33:49 /result {"tag":"d","msg":"CASE A5-32 forward chars then lookbehind got=[0,\"abc\"]"}
+09:33:49 /result {"tag":"y","msg":"[ORACLE] C1-09 trail then trail :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR"}
+09:33:49 /result {"tag":"c","msg":"\n=== A1: upstream regexp-interpreter-lookbehind-character-class-non-bmp.js (19) ==="}
+09:33:49 /result {"tag":"y","msg":"CTRL D1-02 sticky broad class inside a pair got=[0,\"\\ud83d\\ude00\"] notes=DRIFT measured [1,\"\\ude00\"]"}
+09:33:49 /result {"tag":"d","msg":"[info] Reading: N14 = a case slower than 10 ms = the runaway loop a huge matchSize would cause."}
+09:33:49 /result {"tag":"d","msg":"CASE A1-16 negated class twice, one pair got=[3,\"x\"]"}
+09:33:49 /result {"tag":"d","msg":"CASE B1-04 C3 with an optional instead of a star got=null verdict=PRE-FIX"}
+09:33:49 /result {"tag":"y","msg":"CASE C1-09 trail then trail got=[1,\"\\ude00\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:49 /result {"tag":"y","msg":"[ORACLE] D1-09 replace inserts X inside the pair (was E7-03) :: DRIFT measured \\ud83dX\\ude00"}
+09:33:49 /result {"tag":"d","msg":"CASE C1-12 lead and trail captured separately got=null"}
+09:33:49 /result {"tag":"y","msg":"[ORACLE] A3-01 lookbehind for a lone lead, no context :: N1 INDEX 1 MID-PAIR | N1 END 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[0] END MID-PAIR"}
+09:33:49 /result {"tag":"d","msg":"CASE A5-28 word boundary before the lookbehind got=[4,\"c\"]"}
+09:33:49 /result {"tag":"d","msg":"[info] SELFTEST index-vs-text detector: FIRED (N8 group[0] TEXT != substring(1,2))   REQUIRED: FIRED"}
+09:33:49 /result {"tag":"d","msg":"CASE A5-42 upstream: global lookbehind, li=3 got=[5,\"b\"]"}
+09:33:49 /result {"tag":"y","msg":"[PF] B1-02 the same with an emoji got=null want=[3,\"b\",\"a\"]"}
+09:33:49 /result {"tag":"d","msg":"CASE A5-09 backref BEFORE its group in a lookbehind got=[2,\"x\",\"a\"]"}
+09:33:49 /result {"tag":"y","msg":"[ORACLE] B3-06 the poison inside a lookahead :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR | N1 group[2] START MID-PAIR"}
+09:33:49 /result {"tag":"d","msg":"CASE A5-12 lazy plus capture got=[4,\"c\",\"a\"]"}
+09:33:49 /result {"tag":"d","msg":"CASE A3-11 lone lead without u, empty match got=[1,\"\"]"}
+09:33:49 /result {"tag":"y","msg":"[ORACLE] C1-05 lone trail anchored at the end :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR"}
+09:33:49 /result {"tag":"d","msg":"CASE A4-06 greedy .* inside a capture got=[4,\"x\",\"\\ud83d\\ude00\\ud83d\\ude01\"]"}
+09:33:49 /result {"tag":"d","msg":"TEST L1-04 sticky past the pair li=2 got=null"}
+09:33:49 /result {"tag":"y","msg":"[ORACLE] B2-09 the broad class path :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:49 /result {"tag":"d","msg":"[info] Reading: N4 = a capture with start>end = the precondition for the reread() index underflow."}
+09:33:49 /result {"tag":"d","msg":"CASE A4-07 lazy .* inside a capture got=[4,\"x\",\"\"]"}
+09:33:49 /result {"tag":"d","msg":"TEST L1-11 global poisoned backreference li=0 got=[1,\"\\ude00\\ude00\",\"\\ude00\"]"}
+09:33:49 /result {"tag":"d","msg":"CASE A1-04 wrong emoji must not match got=null"}
+09:33:49 /result {"tag":"d","msg":"CASE A5-29 negated word boundary got=[3,\"c\"]"}
+09:33:49 /result {"tag":"d","msg":"CASE A5-35 negative lookbehind mid pattern got=[0,\"xcd\"]"}
+09:33:49 /result {"tag":"d","msg":"CASE A3-10 lone lead without the u flag got=null"}
+09:33:49 /result {"tag":"y","msg":"CASE L1-01 sticky dot, lastIndex inside the pair got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:49 /result {"tag":"y","msg":"[PF] A1-06 negated property escape got=[2,\"b\"] want=null"}
+09:33:49 /result {"tag":"d","msg":"CASE C1-06 a class step then the trail got=null"}
+09:33:49 /result {"tag":"y","msg":"[PF] A1-01 class with a non-BMP alternative got=null want=[3,\"b\"]"}
+09:33:49 /result {"tag":"d","msg":"CASE A1-11 anchor plus a class in a lookbehind got=null verdict=PRE-FIX"}
+09:33:49 /result {"tag":"d","msg":"CASE A3-06 class holding the lone lead got=[1,\"x\"]"}
+09:33:49 /result {"tag":"d","msg":"CASE A5-03 two alternations under a plus got=[2,\"c\",\"a\",\"<undefined>\"]"}
+09:33:49 /result {"tag":"y","msg":"[ORACLE] D1-02 sticky broad class inside a pair :: DRIFT measured [1,\"\\ude00\"]"}
+09:33:49 /result {"tag":"d","msg":"TEST A5-42 upstream: global lookbehind, li=3 li=3 got=[5,\"b\"]"}
+09:33:49 /result {"tag":"y","msg":"CASE B3-02 branch 1 poisoned, branch 2 two groups got=[1,\"\\ude00\\ude00\",\"\\ude00\",\"<undefined>\",\"<undefined>\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:49 /result {"tag":"y","msg":"CASE A3-01 lookbehind for a lone lead, no context got=[1,\"\"] notes=N1 INDEX 1 MID-PAIR~N1 END 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[0] END MID-PAIR verdict=PRE-FIX"}
+09:33:49 /result {"tag":"y","msg":"[ORACLE] B3-04 lazy optional poisoned group :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:49 /result {"tag":"d","msg":"CASE A3-04 lookbehind for a lone trail, bare got=[1,\"x\"]"}
+09:33:49 /result {"tag":"y","msg":"[ORACLE] B3-10 poison then a dot :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:49 /result {"tag":"d","msg":"CASE A3-07 one class step, bare trail got=[1,\"x\"]"}
+09:33:49 /result {"tag":"d","msg":"CASE B4-02 poisoned group twice with an escape got=[0,\"\\ud83d\\ude00\\ude00a\",\"<undefined>\",\"a\"]"}
+09:33:49 /result {"tag":"y","msg":"[ORACLE] C1-01 lone trail in the pattern :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR"}
+09:33:49 /result {"tag":"d","msg":"CASE A3-03 lookbehind for a lone trail, in a pair got=null"}
+09:33:49 /result {"tag":"d","msg":"CASE A1-09 non-BMP range with a fixed count 2 got=[4,\"x\"]"}
+09:33:49 /result {"tag":"y","msg":"[ORACLE] B3-09 poison then a class :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR"}
+09:33:49 /result {"tag":"y","msg":"CASE L1-11 global poisoned backreference got=[1,\"\\ude00\\ude00\",\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR~N1 group[1] START MID-PAIR"}
+09:33:49 /result {"tag":"d","msg":"CASE L1-04 sticky past the pair got=null"}
+09:33:49 /result {"tag":"d","msg":"CASE A4-04 plus class in a lookbehind got=[4,\"x\"]"}
+09:33:49 /result {"tag":"y","msg":"[ORACLE] D1-12 matchAll offsets of $.* (was E8-04) :: DRIFT measured [1,2]"}
+09:33:49 /result {"tag":"y","msg":"[ORACLE] B4-04 nested poison :: N1 INDEX 1 MID-PAIR | N1 group[0] START MID-PAIR | N1 group[1] START MID-PAIR | N1 group[2] START MID-PAIR"}
+09:33:49 /result {"tag":"y","msg":"CASE C1-14 lookahead for the trail then a dot got=[1,\"\\ude00\"] notes=N1 INDEX 1 MID-PAIR~N1 group[0] START MID-PAIR"}
+09:33:49 /result {"tag":"g","msg":"lb_u_probe DONE"}

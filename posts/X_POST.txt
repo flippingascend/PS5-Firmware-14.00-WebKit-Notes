@@ -1,0 +1,20 @@
+--- A - regex finding (main) (244 chars) ---
+PS5 14.00 still fails 21 of the 98 cases ported from the five regex regression test files Apple added in 956f6fb. Same 21 every run, same wrong answers, three runs apart. Three root causes, all lookbehind and non-BMP. No memory primitive in it.
+
+--- B - the hunt (218 chars) ---
+4,957 cases through the PS5 browser from a plain web page. 49 KB of sentinel ArrayBuffers, re-verified after every single case, zero corruption. Regex is where the bugs are: 21 of Apple's 98. Still no memory primitive.
+
+--- C - the OOM (215 chars) ---
+Two 1 GiB canvases kill the PS5 browser's WebContent process. White screen, "there is not enough free system memory", and OK on that screen reloads the same URL, so it loops. One web page, fw 14.00, no chain needed.
+
+--- D - the tool (217 chars) ---
+Wrote a checker for it: 98 cases from Apple's own regex regression files, one HTML file, no server, no deps. It runs the table on whatever engine you open it with and tells you where it disagrees. PS5 14.00: 21 of 98.
+
+--- E - thread 1/3 (82 chars) ---
+What I have on the PS5 browser (fw 14.00) so far, all of it from a plain web page.
+
+--- F - thread 2/3 (200 chars) ---
+The oracle: 24 ArrayBuffers of 2048 bytes, sprayed as sentinels and re-verified after every case. 4,957 case executions, 26 runs, zero heap corruption. Not proof of safety, but nothing has tripped it.
+
+--- G - thread 3/3 (235 chars) ---
+Findings: 21 of the 98 regex cases Apple fixed in 956f6fb still fail with three deterministic root causes, canvas refuses 2^31 px, and a 2 GiB ArrayBuffer or two 1 GiB canvases take the WebContent process down. No memory primitive yet.

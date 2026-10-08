@@ -1,0 +1,19 @@
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+desktop.ini
+
+# editors
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# python
+__pycache__/
+*.py[cod]
+
+# build output
+*.zip
+*.log

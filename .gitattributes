@@ -1,0 +1,4 @@
+# Every file here is shipped with LF line endings, and MANIFEST.txt lists the md5 of each one.
+# Normalising to LF on both sides keeps a fresh clone byte-identical to that manifest on any
+# platform - a CRLF checkout would silently invalidate every hash in it.
+* text=auto eol=lf

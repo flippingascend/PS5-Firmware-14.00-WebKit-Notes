@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>ASCEND overflow probe</title>
+<style>
+body{background:#0a0a0a;color:#00ff41;font:12px 'Courier New',monospace;padding:15px;margin:0}
+pre{white-space:pre-wrap;word-break:break-all}
+#stage{position:absolute;left:-4000px;top:0;width:120px;height:120px;overflow:hidden}
+</style></head>
+<body><pre id="log">Starting...</pre>
+<div id="stage"></div>
+<script>
+'use strict';
+var logEl=document.getElementById('log');
+var lines=[];
+function emit(cls,msg){
+    lines.push('<span class="'+cls+'">'+String(msg).replace(/</g,'&lt;')+'</span>');
+    logEl.innerHTML=lines.join('\n');logEl.scrollTop=logEl.scrollHeight;
+    fetch('/result',{method:'POST',body:JSON.stringify({tag:cls,msg:String(msg).slice(0,450)}),headers:{'Content-Type':'application/json'}}).catch(function(){});
+}
+function info(m){emit('d','[info] '+m);}
+function win(m){emit('y','[WIN] '+m);}
+function sec(m){emit('c','\n=== '+m+' ===');}
+function esc(s){
+    var o='',i,c;
+    s=String(s);
+    for(i=0;i<s.length;i++){
+        c=s.charCodeAt(i);
+        if(c>=32&&c<127){o+=s.charAt(i);}
+        else{o+='\\u'+('0000'+c.toString(16)).slice(-4);}
+    }
+    return o;
+}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+window.onerror=function(msg,src,line){emit('r','ERR:'+msg+'@'+line);};
+if(typeof window.addEventListener==='function'){
+    // A rejected promise that nobody awaits is invisible to window.onerror. Section N
+    // streams proved it can happen, so it gets its own reported tag rather than
+    // vanishing - a silent failure is worse than a loud one in a probe like this.
+    window.addEventListener('unhandledrejection',function(e){
+        var r=(e&&e.reason)||{};
+        emit('r','UNHANDLED REJECTION: '+((r&&r.message)||String(r)));
+    });
+}
+var P_NOW=(window.performance&&performance.now)?function(){return performance.now();}:function(){return Date.now();};
+var HAS_DOM=(typeof document!=='undefined')&&(typeof document.createElement==='function');
+fetch('/report',{method:'POST',body:JSON.stringify({id:'_start',ua:navigator.userAgent,text:'ov_probe'}),headers:{'Content-Type':'application/json'}}).catch(function(){});
+
+// ========================================================================
+// WHY THIS PROBE
+//
+// Six hardware runs closed out the JavaScriptCore regex family: 25 of Apple's
+// own 102 regression cases still fail on fw 14.00, but every divergence is a
+// wrong answer, a false positive or an ill-formed string. Not one produced a
+// capture with start > end, a range outside the subject, a foreign code unit,
+// or a read at m_input[length] - and section Z asked for exactly that read and
+// got null every time. That route is measured and dead for a memory primitive.
+//
+// This probe attacks the classic route that needs no JIT at all: SIZE
+// ARITHMETIC. Ask an API for a logical size whose element count overflows a
+// 32-bit int, and if the implementation computes the allocation with that
+// overflow it allocates a small buffer and then writes the full logical size
+// into it. That is an out-of-bounds write reachable from a single call.
+//
+// Every case here is a SMALL object carrying an EXTREME parameter, because the
+// overflow lives in the parameter arithmetic, not in a large allocation.
+// Where a case has to ask for a genuinely huge buffer it is listed last, and
+// the run posts progress around every case, so if the console dies the last
+// TRY line names the culprit and the guide can simply be reloaded.
+//
+// THE ORACLE. There is no reference engine for C++, so the detector is the heap
+// itself: a spray of ArrayBuffers filled with a known pattern is allocated and
+// kept alive, and after every single case the whole spray is re-verified. A
+// changed byte, or a byteLength that no longer matches, is HEAP CORRUPTION -
+// the one signal that distinguishes a memory-safety bug from a wrong answer.
+// A SELFTEST deliberately corrupts one sentinel to prove the detector fires.
+//
+// Progress protocol, so a crash is still informative:
+//     TRY <id>   posted before the case runs
+//     OK  <id>   posted after it returns and the sentinels verify
+// A TRY with no matching OK is the case that killed the engine.
+// ========================================================================
+
+var SENT_N=24, SENT_LEN=2048;
+var SENT=[];
+function buildSentinels(){
+    SENT=[];
+    for(var i=0;i<SENT_N;i++){
+        var ab=new ArrayBuffer(SENT_LEN);
+        var u8=new Uint8Array(ab);
+        for(var j=0;j<SENT_LEN;j++){ u8[j]=(i*31+j*7)&255; }
+        SENT.push({ab:ab,u8:u8});
+    }
+}
+function checkSentinels(){
+    var bad=[],i,j,want;
+    for(i=0;i<SENT.length;i++){
+        if(SENT[i].ab.byteLength!==SENT_LEN){ bad.push('sentinel'+i+' byteLength='+SENT[i].ab.byteLength); continue; }
+        for(j=0;j<SENT_LEN;j++){
+            want=(i*31+j*7)&255;
+            if(SENT[i].u8[j]!==want){ bad.push('sentinel'+i+' byte '+j+' is '+SENT[i].u8[j]+' want '+want); break; }
+        }
+    }
+    return bad;
+}
+function pokeSentinel(){ SENT[0].u8[17]=123; }
+
+var NB=0, NCORRUPT=0, NSLOW=0, NERR=0, TRYS=0, STATUS={};
+function bomb(id, fn){
+    TRYS++;
+    emit('c','TRY '+id);
+    var t0=P_NOW(), st='ok', det='';
+    try{ det=String(fn()); }
+    catch(e){ st='THREW:'+((e&&e.name)||'?'); NERR++; }
+    var ms=P_NOW()-t0;
+    if(ms>=1500){ st+=' SLOW'; NSLOW++; }
+    releaseCvs();   // give the backing store back before anything else runs
+    var bad=checkSentinels();
+    if(bad.length){ st='HEAP-CORRUPT'; NCORRUPT++; emit('r','CORRUPTION after '+id+': '+bad.slice(0,3).join(' ~ ')); }
+    NB++;
+    STATUS[id]=st;
+    emit('d','BOMB '+id+' status='+esc(st).slice(0,60)+' ms='+ms.toFixed(0)+' '+(det?esc(det).slice(0,150):''));
+    if(bad.length===0) emit('d','OK '+id);
+    return st;
+}
+
+// helpers that make the size arithmetic reachable
+var big=[0x7FFFFFFF,0x40000000,0x20000000,0x10000,0x8000,0x4000,0xFFFFFFFE];
+// Last canvas a case created, so every case can hand its backing store back the
+// moment the case is over. Without this a 256 MiB canvas stays resident until the
+// GC feels like it, and the user's repeated reloads of this page stack them up -
+// which is exactly the pressure that was killing the browser.
+var LASTCVS=null;
+function cvs(w,h){
+    var c=document.createElement('canvas');
+    c.width=w; c.height=h;
+    LASTCVS=c;
+    return c;
+}
+function releaseCvs(){
+    if(!LASTCVS) return;
+    try{ LASTCVS.width=0; LASTCVS.height=0; }catch(e){}
+    LASTCVS=null;
+}
+function ctxOf(w,h){
+    var c=cvs(w,h);
+    var x=c.getContext('2d');
+    return x;
+}
+function svgFilter(inner){
+    var ns='http://www.w3.org/2000/svg';
+    var s=document.createElementNS(ns,'svg');
+    s.setAttribute('width','40'); s.setAttribute('height','40');
+    s.setAttribute('viewBox','0 0 40 40');
+    var d=document.createElementNS(ns,'defs');
+    var f=document.createElementNS(ns,'filter');
+    f.setAttribute('id','ff');
+    f.innerHTML=inner;
+    d.appendChild(f); s.appendChild(d);
+    var r=document.createElementNS(ns,'rect');
+    r.setAttribute('x','0'); r.setAttribute('y','0'); r.setAttribute('width','40'); r.setAttribute('height','40');
+    r.setAttribute('fill','#08f'); r.setAttribute('filter','url(#ff)');
+    s.appendChild(r);
+    document.getElementById('stage').appendChild(s);
+    var b=s.getBoundingClientRect();
+    var out=b.width+'x'+b.height;
+    s.parentNode.removeChild(s);
+    return out;
+}
+
+Promise.resolve().then(async function(){
+
+// ---------------------------------------------------------------- SELFTEST
+sec('SELFTEST: prove the sentinel oracle and the progress protocol fire');
+buildSentinels();
+info('sentinels allocated: '+SENT_N+' x '+SENT_LEN+' bytes = '+(SENT_N*SENT_LEN)+' bytes');
+var clean=checkSentinels();
+info('SELFTEST clean spray verifies: '+(clean.length===0?'YES':'NO '+clean.length)+'   REQUIRED: YES');
+pokeSentinel();
+var dirt=checkSentinels();
+info('SELFTEST detector after a deliberate write: '+(dirt.length?'FIRED ('+dirt[0]+')':'SILENT')+'   REQUIRED: FIRED');
+buildSentinels();
+info('SELFTEST spray rebuilt, verifies: '+(checkSentinels().length===0?'YES':'NO')+'   REQUIRED: YES');
+info('DOM available: '+HAS_DOM+'   (the dry run on a non-browser engine reports NO-DOM for every DOM case)');
+
+// ---------------------------------------------------------------- A: canvas buffer arithmetic
+sec('A: canvas buffer size arithmetic - logical area near and past 2^31');
+bomb('A-01', function(){ var c=cvs(65536,65536); var x=c.getContext('2d'); x.fillStyle='#f00'; x.fillRect(0,0,65536,65536); var d=x.getImageData(0,0,1,1); return c.width+'x'+c.height+' px='+d.data[0]; });
+bomb('A-02', function(){ var c=cvs(46341,46341); var x=c.getContext('2d'); x.fillRect(0,0,46341,46341); return x.getImageData(0,0,1,1).data[0]; });
+bomb('A-03', function(){ var c=cvs(32768,65536); var x=c.getContext('2d'); x.fillRect(0,0,32768,65536); return x.getImageData(0,0,1,1).data[0]; });
+bomb('A-04', function(){ var c=cvs(65536,32768); var x=c.getContext('2d'); x.fillRect(0,0,65536,32768); return x.getImageData(0,0,1,1).data[0]; });
+bomb('A-05', function(){ var c=cvs(23170,23170); var x=c.getContext('2d'); x.fillRect(0,0,23170,23170); return x.getImageData(0,0,1,1).data[0]; });
+bomb('A-06', function(){ var c=cvs(4096,4096); var x=c.getContext('2d'); x.fillRect(0,0,4096,4096); return x.getImageData(0,0,1,1).data[0]; });   // 64 MiB, down from 256 MiB: 256 MiB was measured as accepted back on 09:59 (ms=88), so the smaller control keeps the fact and lowers the peak the light run needs
+bomb('A-07', function(){ var c=cvs(46340,46340); var x=c.getContext('2d'); x.fillRect(0,0,46340,46340); return x.getImageData(0,0,1,1).data[0]; });   // 46340*46340 = 2,147,395,600 px: the twin of A-02, this one just UNDER 2^31. The 16384x16384 (=1 GiB, the only case that really allocates big) moved to H-01 after the summary.
+bomb('A-08', function(){ var c=cvs(1,0x7FFFFFFF); return c.width+'x'+c.height; });
+bomb('A-09', function(){ var c=cvs(0x7FFFFFFF,1); return c.width+'x'+c.height; });
+bomb('A-10', function(){ var c=cvs(0x7FFFFFFF,0x7FFFFFFF); return c.width+'x'+c.height; });
+bomb('A-11', function(){ var c=cvs(0,0x7FFFFFFF); return c.width+'x'+c.height; });
+bomb('A-12', function(){ var c=cvs(-1,4); return c.width+'x'+c.height; });
+bomb('A-13', function(){ var c=cvs(NaN,4); return c.width+'x'+c.height; });
+bomb('A-14', function(){ var c=cvs(1e21,4); return c.width+'x'+c.height; });
+bomb('A-15', function(){ var c=cvs(0x100000000,2); return c.width+'x'+c.height; });
+bomb('A-16', function(){ var c=cvs(0xFFFFFFFF,1); return c.width+'x'+c.height; });
+
+// ---------------------------------------------------------------- B: ImageData arithmetic
+sec('B: ImageData allocation and dirty-rect arithmetic');
+bomb('B-01', function(){ var x=ctxOf(64,64); var d=x.createImageData(0x7FFFFFFF,1); return d.width+'x'+d.height+' len='+d.data.length; });
+bomb('B-02', function(){ var x=ctxOf(64,64); var d=x.createImageData(1,0x7FFFFFFF); return d.width+'x'+d.height+' len='+d.data.length; });
+bomb('B-03', function(){ var x=ctxOf(64,64); var d=x.createImageData(65536,65536); return d.width+'x'+d.height+' len='+d.data.length; });
+bomb('B-04', function(){ var x=ctxOf(64,64); var d=x.createImageData(65536,16384); return d.width+'x'+d.height+' len='+d.data.length; });
+bomb('B-05', function(){ var x=ctxOf(64,64); var d=x.createImageData(0x40000000,4); return d.data.length; });
+bomb('B-06', function(){ var x=ctxOf(64,64); var d=x.createImageData(-1,1); return d.width+'x'+d.height; });
+bomb('B-07', function(){ var x=ctxOf(64,64); var d=x.createImageData(NaN,1); return d.width+'x'+d.height; });
+bomb('B-08', function(){ var x=ctxOf(64,64); var d=x.getImageData(0,0,0x7FFFFFFF,1); return d.data.length; });
+bomb('B-09', function(){ var x=ctxOf(64,64); var d=x.getImageData(0,0,65536,65536); return d.data.length; });
+bomb('B-10', function(){ var x=ctxOf(64,64); var d=x.getImageData(-0x7FFFFFFF,0,1,1); return d.data.length; });
+bomb('B-11', function(){ var x=ctxOf(64,64); var d=x.getImageData(0,0,0,0); return d.data.length; });
+bomb('B-12', function(){ var x=ctxOf(64,64); var d=x.createImageData(2,2); x.putImageData(d,-0x7FFFFFFF,-0x7FFFFFFF); return 'ok'; });
+bomb('B-13', function(){ var x=ctxOf(64,64); var d=x.createImageData(2,2); x.putImageData(d,0x7FFFFFFF,0x7FFFFFFF); return 'ok'; });
+bomb('B-14', function(){ var x=ctxOf(64,64); var d=x.createImageData(2,2); x.putImageData(d,3,3,0,0,0x7FFFFFFF,0x7FFFFFFF); return 'ok'; });
+bomb('B-15', function(){ var x=ctxOf(64,64); var d=x.createImageData(2,2); x.putImageData(d,3,3,-0x7FFFFFFF,-0x7FFFFFFF,1,1); return 'ok'; });
+bomb('B-16', function(){ var x=ctxOf(64,64); var d=x.getImageData(0,0,1,1); d.data.length; x.putImageData(d,0,0,0,0,65535,65535); return 'ok'; });
+
+// ---------------------------------------------------------------- C: canvas geometry with extreme parameters
+sec('C: canvas filters and geometry - small surface, extreme parameters');
+bomb('C-01', function(){ var x=ctxOf(64,64); x.filter='blur(1e9px)'; x.fillStyle='#0f0'; x.fillRect(0,0,64,64); return x.getImageData(0,0,1,1).data[0]; });
+bomb('C-02', function(){ var x=ctxOf(64,64); x.filter='blur(0.0001px)'; x.fillRect(0,0,64,64); return x.getImageData(0,0,1,1).data[0]; });
+bomb('C-03', function(){ var x=ctxOf(64,64); x.filter='blur(1e38px)'; x.fillRect(0,0,64,64); return x.getImageData(0,0,1,1).data[0]; });
+bomb('C-04', function(){ var x=ctxOf(64,64); x.filter='drop-shadow(1e9px 1e9px 1e9px red)'; x.fillRect(0,0,64,64); return x.getImageData(0,0,1,1).data[0]; });
+bomb('C-05', function(){ var x=ctxOf(64,64); x.filter='blur(NaNpx)'; x.fillRect(0,0,64,64); return 'ok'; });
+bomb('C-06', function(){ var x=ctxOf(64,64); var g=x.createLinearGradient(0,0,1e9,1e9); g.addColorStop(0,'#f00'); g.addColorStop(1,'#00f'); x.fillStyle=g; x.fillRect(0,0,64,64); return x.getImageData(0,0,1,1).data[0]; });
+bomb('C-07', function(){ var x=ctxOf(64,64); var g=x.createRadialGradient(0,0,1e9,1e9,1e9,1e9); g.addColorStop(0,'#f00'); g.addColorStop(1,'#00f'); x.fillStyle=g; x.fillRect(0,0,64,64); return 'ok'; });
+bomb('C-08', function(){ var x=ctxOf(64,64); var s=ctxOf(4,4); x.drawImage(s,0,0,1e9,1e9); return 'ok'; });
+bomb('C-09', function(){ var x=ctxOf(64,64); var s=ctxOf(4,4); x.drawImage(s,0,0,-1e9,-1e9); return 'ok'; });
+bomb('C-10', function(){ var x=ctxOf(64,64); var s=ctxOf(4,4); x.drawImage(s,-0x7FFFFFFF,-0x7FFFFFFF,0x7FFFFFFF,0x7FFFFFFF,0,0,64,64); return 'ok'; });
+bomb('C-11', function(){ var x=ctxOf(64,64); x.setTransform(1e9,0,0,1e9,0,0); x.fillRect(0,0,64,64); return 'ok'; });
+bomb('C-12', function(){ var x=ctxOf(64,64); x.font='1e9px sans-serif'; var m=x.measureText('Wg'); return 'w='+m.width; });
+bomb('C-13', function(){ var x=ctxOf(64,64); x.shadowBlur=0x7FFFFFFF; x.shadowColor='#000'; x.fillRect(0,0,64,64); return 'ok'; });
+bomb('C-14', function(){ var x=ctxOf(64,64); x.lineWidth=1e9; x.strokeRect(0,0,64,64); return 'ok'; });
+bomb('C-15', function(){ var x=ctxOf(64,64); x.miterLimit=1e9; x.lineJoin='miter'; x.beginPath(); x.moveTo(0,0); x.lineTo(60,1); x.lineTo(0,60); x.stroke(); return 'ok'; });
+bomb('C-16', function(){ var x=ctxOf(64,64); x.beginPath(); x.arc(32,32,1e9,0,6.28); x.fill(); return 'ok'; });
+bomb('C-17', function(){ var x=ctxOf(64,64); x.beginPath(); x.arc(32,32,1e9,0,1e9); x.stroke(); return 'ok'; });
+bomb('C-18', function(){ var x=ctxOf(64,64); x.beginPath(); x.roundRect(0,0,64,64,[1e9,1e9,1e9,1e9]); x.fill(); return 'ok'; });
+bomb('C-19', function(){ var x=ctxOf(64,64); x.beginPath(); x.ellipse(32,32,1e9,1e9,0,0,6.28); x.fill(); return 'ok'; });
+bomb('C-20', function(){ var x=ctxOf(64,64); x.scale(1e-9,1e-9); x.lineWidth=1e9; x.strokeRect(0,0,64,64); return 'ok'; });
+
+// ---------------------------------------------------------------- D: SVG filters
+sec('D: SVG filter primitives - small element, extreme parameters');
+bomb('D-01', function(){ return svgFilter('<feGaussianBlur stdDeviation="1e9"/>'); });
+bomb('D-02', function(){ return svgFilter('<feGaussianBlur stdDeviation="1e38"/>'); });
+bomb('D-03', function(){ return svgFilter('<feGaussianBlur stdDeviation="1e9 1e9"/>'); });
+bomb('D-04', function(){ return svgFilter('<feMorphology operator="dilate" radius="1e9"/>'); });
+bomb('D-05', function(){ return svgFilter('<feMorphology operator="erode" radius="1e38"/>'); });
+bomb('D-06', function(){ return svgFilter('<feConvolveMatrix order="1000 1000" kernelMatrix="1"/>'); });
+bomb('D-07', function(){ return svgFilter('<feConvolveMatrix order="1e9 1e9" kernelMatrix="1"/>'); });
+bomb('D-08', function(){ return svgFilter('<feConvolveMatrix order="3 3" kernelMatrix="1 1 1 1 1 1 1 1 1" divisor="0"/>'); });
+bomb('D-09', function(){ return svgFilter('<feTurbulence baseFrequency="1e-38" numOctaves="8"/>'); });
+bomb('D-10', function(){ return svgFilter('<feTurbulence type="fractalNoise" baseFrequency="1e9" numOctaves="8"/>'); });
+bomb('D-11', function(){ return svgFilter('<feDisplacementMap in2="SourceGraphic" scale="1e9"/>'); });
+bomb('D-12', function(){ return svgFilter('<feOffset dx="1e9" dy="1e9"/>'); });
+bomb('D-13', function(){ return svgFilter('<feDropShadow dx="1e9" dy="1e9" stdDeviation="1e9"/>'); });
+bomb('D-14', function(){ return svgFilter('<feTile/>'); });
+bomb('D-15', function(){ return svgFilter('<feComponentTransfer><feFuncA type="table" tableValues="0 1 1 0"/></feComponentTransfer>'); });
+bomb('D-16', function(){ return svgFilter('<feComposite operator="arithmetic" k1="1e9" k2="1e9" k3="1e9" k4="1e9"/>'); });
+bomb('D-17', function(){ return svgFilter('<feImage href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2740%27 height=%2740%27%3E%3C/svg%3E"/>'); });
+bomb('D-18', function(){ return svgFilter('<feColorMatrix type="matrix" values="1e9 0 0 0 0 0 1e9 0 0 0 0 0 1e9 0 0 0 0 0 1e9 0"/>'); });
+bomb('D-19', function(){ return svgFilter('<feBlend in2="SourceGraphic" mode="multiply"/>'); });
+bomb('D-20', function(){ return svgFilter('<feGaussianBlur stdDeviation="-1e9"/>'); });
+
+// ---------------------------------------------------------------- E: bitmap resize and crop arithmetic
+sec('E: createImageBitmap resize and crop arithmetic');
+var PNG1x1='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg==';
+function blobOf(url){
+    return fetch(url).then(function(r){ return r.blob(); });
+}
+async function bmp(opts, what){
+    var b=await blobOf(PNG1x1);
+    var bm=await createImageBitmap(b,opts);
+    var out=bm.width+'x'+bm.height;
+    var x=ctxOf(64,64);
+    x.drawImage(bm,0,0);
+    if(bm.close) bm.close();
+    return out+(what?' '+what:'');
+}
+// the bitmap cases need await, so they run in the async group below
+async function asyncGroup(){
+    var cases=[
+        ['E-01 resize to a huge square', {resizeWidth:1e9,resizeHeight:1e9}],
+        ['E-02 resize width only, 32-bit max', {resizeWidth:0x7FFFFFFF,resizeHeight:1}],
+        ['E-03 resize both to 32-bit max', {resizeWidth:0x7FFFFFFF,resizeHeight:0x7FFFFFFF}],
+        ['E-04 crop rect with a huge extent', {cropRect:{x:0,y:0,width:1e9,height:1e9}}],
+        ['E-05 crop rect at a huge negative origin', {cropRect:{x:-1e9,y:-1e9,width:1e9,height:1e9}}],
+        ['E-06 crop width 32-bit max', {cropRect:{x:0,y:0,width:0x7FFFFFFF,height:1}}],
+        ['E-07 resize plus crop together', {cropRect:{x:0,y:0,width:1e9,height:1e9},resizeWidth:1e9,resizeHeight:1e9}],
+        ['E-08 resize to NaN', {resizeWidth:NaN,resizeHeight:1}],
+        ['E-09 resize to zero', {resizeWidth:0,resizeHeight:0}],
+        ['E-10 resizeQuality high with a huge box', {resizeWidth:1e9,resizeHeight:1e9,resizeQuality:'high'}],
+        ['E-11 imageOrientation flipY control', {imageOrientation:'flipY'}],
+        ['E-12 crop of zero size', {cropRect:{x:0,y:0,width:0,height:0}}]
+    ];
+    for(var i=0;i<cases.length;i++){
+        var label=cases[i][0], id=label.split(' ')[0], opts=cases[i][1];   // per-case id: every E case used to post as just 'E-'
+        emit('c','TRY '+id);
+        TRYS++;
+        var t0=P_NOW(), st='ok', det='';
+        try{ det=await bmp(opts); }catch(e){ st='THREW:'+((e&&e.name)||'?'); NERR++; }
+        var ms=P_NOW()-t0;
+        if(ms>=1500){ st+=' SLOW'; NSLOW++; }
+        releaseCvs();
+        var bad=checkSentinels();
+        if(bad.length){ st='HEAP-CORRUPT'; NCORRUPT++; emit('r','CORRUPTION after '+id+': '+bad.slice(0,3).join(' ~ ')); }
+        NB++; STATUS[id]=st;
+        emit('d','BOMB '+label+' status='+esc(st).slice(0,50)+' ms='+ms.toFixed(0)+' '+(det?esc(det).slice(0,120):''));
+        if(bad.length===0) emit('d','OK '+id);
+        await sleep(10);
+    }
+}
+if(HAS_DOM){ await asyncGroup(); } else { info('dry run without a DOM: the 12 E cases are not attempted here'); }
+
+// ---------------------------------------------------------------- F: new formatting code
+sec('F: the newest formatting and text code - least audited arithmetic');
+bomb('F-01', function(){ if(typeof Intl==='undefined'||!Intl.DurationFormat) return 'no Intl.DurationFormat'; var f=new Intl.DurationFormat('en',{style:'long'}); return f.format({seconds:1e21}); });
+bomb('F-02', function(){ if(!Intl.DurationFormat) return 'absent'; var f=new Intl.DurationFormat('en',{style:'digital'}); return f.format({seconds:Number.MAX_VALUE}); });
+bomb('F-03', function(){ if(!Intl.DurationFormat) return 'absent'; var f=new Intl.DurationFormat('en',{fractionalDigits:100}); return f.format({seconds:1.5}); });
+bomb('F-04', function(){ if(!Intl.DurationFormat) return 'absent'; var f=new Intl.DurationFormat('en'); return f.format({hours:1e9,minutes:-1e9,seconds:1e9}); });
+bomb('F-05', function(){ if(!Intl.DurationFormat) return 'absent'; var f=new Intl.DurationFormat('en'); return f.format({seconds:NaN,minutes:Infinity}); });
+bomb('F-06', function(){ if(!Intl.DurationFormat) return 'absent'; var f=new Intl.DurationFormat('en'); return f.formatToParts({seconds:1e21}).length; });
+bomb('F-07', function(){ if(typeof Intl==='undefined'||!Intl.NumberFormat) return 'absent'; return new Intl.NumberFormat('en',{maximumFractionDigits:1e9}).format(1e21); });
+bomb('F-08', function(){ if(!Intl.NumberFormat) return 'absent'; return new Intl.NumberFormat('en',{minimumIntegerDigits:0x7FFFFFFF}).format(1); });
+bomb('F-09', function(){ if(!Intl.NumberFormat) return 'absent'; var p=new Intl.NumberFormat('en').formatToParts(1e21); return p.length; });
+bomb('F-10', function(){ if(!Intl.DateTimeFormat) return 'absent'; return new Intl.DateTimeFormat('en',{timeZone:'UTC'}).format(new Date(8.64e15)); });
+bomb('F-11', function(){ var b=new ArrayBuffer(8); var v=new DataView(b); v.setFloat64(0,1e308); return 'ok'; });
+bomb('F-12', function(){ if(typeof TextDecoder==='undefined') return 'absent'; var b=new Uint8Array(4); b[0]=0xFF; b[1]=0xFE; return new TextDecoder('utf-16le').decode(b).length; });
+
+// ---------------------------------------------------------------- v2 fix: why the summary moved up
+// RUN 4 OF v1 died with the console reporting "there is not enough free system
+// memory". The log names the case: TRY A-07 with no OK, and A-07 was
+// cvs(16384,16384) = 16384*16384*4 = 1,073,741,824 bytes = exactly 1 GiB. In
+// runs 1-3 that same case came back "ok SLOW ms=3355/4622/4805", so the engine
+// really does back a 1 GiB canvas; those canvases were still resident when run 4
+// asked for another one, and the WebContent process hit the console's ceiling.
+// The 1 GiB canvas is therefore a POSITIVE CONTROL for the hypothesis - a case
+// that gets a genuine large backing store is the only way to see an allocation
+// sized from an overflowed count - but it has to be the LAST thing we ask for,
+// after every result is already on the wire. Hence: light sections, then the
+// summary, then the heavy group, and every heavy case releases its backing store
+// and yields before the next one.
+
+// ---------------------------------------------------------------- J: boundary arithmetic that CANNOT allocate
+// Why this section exists. On the 10:16 hardware load the heavy group began and
+// the very first case, G-02 (a 2 GiB ArrayBuffer), never reported back: TRY G-02
+// arrived with no MEMREQ, no BOMB and no OK, and the console was back to "there
+// is not enough free system memory". So on this engine a 2 GiB ArrayBuffer
+// request is fatal rather than refused - which makes the whole allocating form of
+// the boundary test unreachable on a console we want to keep.
+//
+// Every case below asks the SAME arithmetic question - what happens to a length,
+// offset or index at 2^31 and 2^32 - through APIs that CLAMP or THROW instead of
+// allocating: subarray, slice, copyWithin, fill, set, DataView offsets, String
+// and Array lengths, Blob.slice. Same boundary, no backing store, so this can run
+// on a plain load with no risk of taking the browser down.
+sec('J: length and offset arithmetic at 2^31 and 2^32 - clamped or refused, never allocated');
+bomb('J-01', function(){ return new Uint8Array(16).subarray(0,0x7FFFFFFF).length; });
+bomb('J-02', function(){ return new Uint8Array(16).subarray(0x7FFFFFFF,0).length; });
+bomb('J-03', function(){ return new Uint8Array(16).subarray(-0x80000000,0x7FFFFFFF).length; });
+bomb('J-04', function(){ return new Uint8Array(16).slice(0,0x7FFFFFFF).length; });
+bomb('J-05', function(){ return new Uint8Array(16).slice(-0x7FFFFFFF,0x7FFFFFFF).length; });
+bomb('J-06', function(){ return new Uint8Array(16).buffer.slice(0,0x7FFFFFFF).byteLength; });
+bomb('J-07', function(){ var a=new Uint8Array(16); a.copyWithin(0x7FFFFFFF,0); return a.length; });
+bomb('J-08', function(){ var a=new Uint8Array(16); a.copyWithin(0,0x7FFFFFFF); return a.length; });
+bomb('J-09', function(){ var a=new Uint8Array(16); a.fill(7,0x7FFFFFFF,0x80000000); return a[0]+a[15]; });
+bomb('J-10', function(){ var a=new Uint8Array(16); a.set(new Uint8Array(2),0x7FFFFFFF); return a.length; });
+bomb('J-11', function(){ var d=new DataView(new ArrayBuffer(16),4,0x7FFFFFFF); return d.byteLength; });
+bomb('J-12', function(){ var d=new DataView(new ArrayBuffer(16),-1); return d.byteOffset; });
+bomb('J-13', function(){ return [1,2,3].slice(0,0x7FFFFFFF).length; });
+bomb('J-14', function(){ return 'abc'.substring(0,0x7FFFFFFF).length; });
+bomb('J-15', function(){ return 'abc'.repeat(0x7FFFFFFF).length; });
+bomb('J-16', function(){ return new Array(0x7FFFFFFF).length; });
+bomb('J-17', function(){ return new Array(0x100000000).length; });
+bomb('J-18', function(){ return new Blob(['abc']).slice(0,0x7FFFFFFF).size; });
+bomb('J-19', function(){ return new TextEncoder().encode('abc').subarray(0,0x7FFFFFFF).length; });
+bomb('J-20', function(){ var s='abcdef'; return s.slice(-0x7FFFFFFF,0x7FFFFFFF).length; });
+
+// ---------------------------------------------------------------- K: WebAudio offline arithmetic
+// The audio path is the largest C++ surface left that a page can reach without a
+// user gesture, and its allocation arithmetic is the classic channels x length x 4.
+// OfflineAudioContext is used deliberately: it is pure computation and memory, with
+// no audio device and no rendering. Every case here is a request that the spec
+// requires to be REFUSED (zero channels, negative or NaN length, sample rate 0,
+// an out-of-range channel index, an offset past the end of a buffer), so a THREW is
+// the expected answer and the interesting outcome is a case that does NOT throw.
+// Nothing in this section asks for a buffer larger than 8 frames.
+sec('K: WebAudio offline arithmetic - every request here must be refused');
+if(typeof OfflineAudioContext==='undefined'){
+    info('no OfflineAudioContext in this engine: section K skipped (the dry run has none either)');
+} else {
+bomb('K-01', function(){ return new OfflineAudioContext(0,1024,48000).length; });
+bomb('K-02', function(){ return new OfflineAudioContext(2,-1,48000).length; });
+bomb('K-03', function(){ return new OfflineAudioContext(2,NaN,48000).length; });
+bomb('K-04', function(){ return new OfflineAudioContext(2,1024,0).sampleRate; });
+bomb('K-05', function(){ return new OfflineAudioContext(2,1024,0x7FFFFFFF).sampleRate; });
+bomb('K-06', function(){ var c=new OfflineAudioContext(2,1024,48000); return c.createBuffer(0x7FFFFFFF,8,48000).length; });
+bomb('K-07', function(){ var c=new OfflineAudioContext(2,1024,48000); return c.createBuffer(0,8,48000).length; });
+bomb('K-08', function(){ var c=new OfflineAudioContext(2,1024,48000); return c.createBuffer(2,8,0).sampleRate; });
+bomb('K-09', function(){ var c=new OfflineAudioContext(2,1024,48000); return c.createBuffer(2,-1,48000).length; });
+bomb('K-10', function(){ var c=new OfflineAudioContext(2,1024,48000); return c.createBuffer(2,8,48000).getChannelData(0x7FFFFFFF).length; });
+bomb('K-11', function(){ var c=new OfflineAudioContext(2,1024,48000); var b=c.createBuffer(2,8,48000); b.copyToChannel(new Float32Array(4),0,0x7FFFFFFF); return 'no throw'; });
+bomb('K-12', function(){ var c=new OfflineAudioContext(2,1024,48000); var b=c.createBuffer(2,8,48000); b.copyFromChannel(new Float32Array(4),0,0x7FFFFFFF); return 'no throw'; });
+bomb('K-13', function(){ var c=new OfflineAudioContext(2,1024,48000); var b=c.createBuffer(2,8,48000); var s=c.createBufferSource(); s.buffer=b; s.start(0,0x7FFFFFFF,1e9); return 'started'; });
+bomb('K-14', function(){ var c=new OfflineAudioContext(2,1024,48000); c.destination.channelCount=0x7FFFFFFF; return c.destination.channelCount; });
+bomb('K-15', function(){ var c=new OfflineAudioContext(2,1024,48000); var g=c.createGain(); g.gain.setValueAtTime(1e21,0); g.gain.linearRampToValueAtTime(-1e21,1e9); return g.gain.value; });
+bomb('K-16', function(){ var c=new OfflineAudioContext(2,1024,48000); c.decodeAudioData(new Uint8Array(16).buffer, function(){}, function(){ return 'decode-error'; }); return 'decode submitted'; });
+bomb('K-17', function(){ var c=new OfflineAudioContext(2,8,48000); var b=c.createBuffer(2,8,48000); return b.length+'x'+b.numberOfChannels+'@'+b.sampleRate; });
+}
+
+// ---------------------------------------------------------------- L: WebGL validation
+// WebGL is the other big C++ surface, and its size checks live in the driver-facing
+// layer. The two potentially expensive cases do NOT guess at a limit: they read the
+// driver's own MAX_TEXTURE_SIZE / MAX_RENDERBUFFER_SIZE and ask for ONE PAST it.
+// One past, not four times: a request beyond the limit must be refused either way,
+// so the extra size buys no information and only enlarges the worst case if a
+// port ever validates after allocating rather than before. Everything else here is
+// an offset or a count that must be rejected.
+sec('L: WebGL parameter and size validation - validation before allocation');
+var GLC=null, GL=null;
+if(HAS_DOM){
+    try{ GLC=document.createElement('canvas'); GL=GLC.getContext('webgl')||GLC.getContext('experimental-webgl'); }catch(e){ GL=null; }
+}
+if(!GL){
+    info('no WebGL context in this engine: section L skipped (the dry run has none either)');
+} else {
+info('WebGL context acquired; MAX_TEXTURE_SIZE='+GL.getParameter(GL.MAX_TEXTURE_SIZE)+' MAX_RENDERBUFFER_SIZE='+GL.getParameter(GL.MAX_RENDERBUFFER_SIZE));
+bomb('L-01', function(){ return GL.getParameter(GL.MAX_TEXTURE_SIZE)+'/'+GL.getParameter(GL.MAX_RENDERBUFFER_SIZE)+'/'+GL.getParameter(GL.MAX_VIEWPORT_DIMS).join('x'); });
+bomb('L-02', function(){ GL.viewport(0,0,0x7FFFFFFF,0x7FFFFFFF); var v=GL.getParameter(GL.VIEWPORT); return GL.getError()+' vp='+v[2]+'x'+v[3]; });
+bomb('L-03', function(){ GL.scissor(0,0,-1,-1); return GL.getError()+' box='+GL.getParameter(GL.SCISSOR_BOX).join(','); });
+bomb('L-04', function(){ var b=GL.createBuffer(); GL.bindBuffer(GL.ARRAY_BUFFER,b); GL.bufferData(GL.ARRAY_BUFFER,0x4000000,GL.STATIC_DRAW); var e=GL.getError(); GL.deleteBuffer(b); return e; });
+bomb('L-05', function(){ var b=GL.createBuffer(); GL.bindBuffer(GL.ARRAY_BUFFER,b); GL.bufferSubData(GL.ARRAY_BUFFER,0x7FFFFFFF,new Float32Array(1)); return GL.getError(); });
+bomb('L-06', function(){ GL.drawArrays(GL.POINTS,0x7FFFFFFF,0x7FFFFFFF); return GL.getError(); });
+bomb('L-07', function(){ GL.texImage2D(GL.TEXTURE_2D,0,GL.RGBA,-1,-1,0,GL.RGBA,GL.UNSIGNED_BYTE,null); return GL.getError(); });
+bomb('L-08', function(){ var m=GL.getParameter(GL.MAX_TEXTURE_SIZE); GL.texImage2D(GL.TEXTURE_2D,0,GL.RGBA,m+1,m+1,0,GL.RGBA,GL.UNSIGNED_BYTE,null); return GL.getError()+' (max '+m+')'; });
+bomb('L-09', function(){ var m=GL.getParameter(GL.MAX_RENDERBUFFER_SIZE); var r=GL.createRenderbuffer(); GL.bindRenderbuffer(GL.RENDERBUFFER,r); GL.renderbufferStorage(GL.RENDERBUFFER,GL.RGBA8,m+1,m+1); var e=GL.getError(); GL.deleteRenderbuffer(r); return e+' (max '+m+')'; });
+bomb('L-10', function(){ GL.readPixels(0,0,4,4,GL.RGBA,GL.UNSIGNED_BYTE,new Uint8Array(64)); return GL.getError(); });
+bomb('L-11', function(){ var s=GL.createShader(GL.VERTEX_SHADER); GL.shaderSource(s,'attribute vec4 p;void main(){gl_Position=p;}'); GL.compileShader(s); return GL.getShaderParameter(s,GL.COMPILE_STATUS); });
+bomb('L-12', function(){ GL.drawElements(GL.TRIANGLES,0x7FFFFFFF,GL.UNSIGNED_SHORT,0x7FFFFFFF); return GL.getError(); });
+}
+
+// ---------------------------------------------------------------- M: capability census
+// Two surfaces were just closed by ABSENCE rather than by testing: this engine has
+// no WebGL context and no OfflineAudioContext. That is worth knowing precisely,
+// because it means the attack surface has to be enumerated rather than guessed at.
+// Every case here returns a compact list of what exists and what does not. Nothing
+// allocates more than a short string, nothing renders, nothing plays, and the whole
+// section is eight cases.
+sec('M: capability census - what this engine actually exposes');
+function tf(x){ try{ return typeof x; }catch(e){ return 'ERR'; } }
+// THREW:, not ERR: - 'ERR:' is the page's UNCAUGHT-error channel (window.onerror
+// emits ERR:<msg>@<line>), so a capability that refuses must not spell it that
+// way or it looks like a fault in the log and in the harness's error count.
+function tv(f){ try{ return String(f()); }catch(e){ return 'THREW:'+((e&&e.name)||'?'); } }
+bomb('M-01', function(){ return ['webgl2='+tf(typeof WebGL2RenderingContext!=='undefined'?WebGL2RenderingContext:undefined),'webgpu='+tf(typeof navigator!=='undefined'?navigator.gpu:undefined),'offscreenCanvas='+tf(typeof OffscreenCanvas!=='undefined'?OffscreenCanvas:undefined),'imageDecoder='+tf(typeof ImageDecoder!=='undefined'?ImageDecoder:undefined),'videoDecoder='+tf(typeof VideoDecoder!=='undefined'?VideoDecoder:undefined),'videoFrame='+tf(typeof VideoFrame!=='undefined'?VideoFrame:undefined)].join(' '); });
+bomb('M-02', function(){ return ['AudioContext='+tf(typeof AudioContext!=='undefined'?AudioContext:undefined),'webkitAudio='+tf(typeof webkitAudioContext!=='undefined'?webkitAudioContext:undefined),'OfflineAudioContext='+tf(typeof OfflineAudioContext!=='undefined'?OfflineAudioContext:undefined),'webkitOffline='+tf(typeof webkitOfflineAudioContext!=='undefined'?webkitOfflineAudioContext:undefined),'AudioBuffer='+tf(typeof AudioBuffer!=='undefined'?AudioBuffer:undefined),'AudioWorklet='+tf(typeof AudioWorkletNode!=='undefined'?AudioWorkletNode:undefined)].join(' '); });
+bomb('M-03', function(){ return ['WebAssembly='+tf(typeof WebAssembly!=='undefined'?WebAssembly:undefined),'wasmCompileStreaming='+tf(typeof WebAssembly!=='undefined'?WebAssembly.compileStreaming:undefined),'SharedArrayBuffer='+tf(typeof SharedArrayBuffer!=='undefined'?SharedArrayBuffer:undefined),'Atomics='+tf(typeof Atomics!=='undefined'?Atomics:undefined),'BigInt64Array='+tf(typeof BigInt64Array!=='undefined'?BigInt64Array:undefined),'structuredClone='+tf(typeof structuredClone!=='undefined'?structuredClone:undefined),'compressionStream='+tf(typeof CompressionStream!=='undefined'?CompressionStream:undefined),'cryptoSubtle='+tf(typeof crypto!=='undefined'?crypto.subtle:undefined)].join(' '); });
+bomb('M-04', function(){ return ['FontFace='+tf(typeof FontFace!=='undefined'?FontFace:undefined),'FontFaceSet='+tf(typeof FontFaceSet!=='undefined'?FontFaceSet:undefined),'documentFonts='+tf(HAS_DOM&&document.fonts?document.fonts:undefined),'segmenter='+tf(typeof Intl!=='undefined'?Intl.Segmenter:undefined),'TextMetrics='+tf(typeof TextMetrics!=='undefined'?TextMetrics:undefined)].join(' '); });
+bomb('M-05', function(){ if(!HAS_DOM) return 'no DOM'; var v=document.createElement('video'); return ['mp4h264='+tv(function(){return v.canPlayType('video/mp4; codecs="avc1.42E01E"');}),'mp4h265='+tv(function(){return v.canPlayType('video/mp4; codecs="hvc1.1.6.L93.B0"');}),'mp4av1='+tv(function(){return v.canPlayType('video/mp4; codecs="av01.0.00M.08"');}),'webmvp9='+tv(function(){return v.canPlayType('video/webm; codecs="vp9"');}),'mpegts='+tv(function(){return v.canPlayType('video/mp2t; codecs="avc1.42E01E"');}),'aac='+tv(function(){return v.canPlayType('audio/mp4; codecs="mp4a.40.2"');}),'opus='+tv(function(){return v.canPlayType('audio/webm; codecs="opus"');})].join(' '); });
+bomb('M-06', function(){ return ['MediaSource='+tf(typeof MediaSource!=='undefined'?MediaSource:undefined),'mse_mp4='+tv(function(){return MediaSource.isTypeSupported('video/mp4; codecs="avc1.42E01E"');}),'mse_av1='+tv(function(){return MediaSource.isTypeSupported('video/mp4; codecs="av01.0.00M.08"');}),'Worker='+tf(typeof Worker!=='undefined'?Worker:undefined),'SharedWorker='+tf(typeof SharedWorker!=='undefined'?SharedWorker:undefined),'serviceWorker='+tf(typeof navigator!=='undefined'?navigator.serviceWorker:undefined),'websocket='+tf(typeof WebSocket!=='undefined'?WebSocket:undefined),'rtc='+tf(typeof RTCPeerConnection!=='undefined'?RTCPeerConnection:undefined)].join(' '); });
+bomb('M-07', function(){ return ['localStorage='+tv(function(){return typeof window.localStorage;}),'sessionStorage='+tv(function(){return typeof window.sessionStorage;}),'indexedDB='+tf(typeof indexedDB!=='undefined'?indexedDB:undefined),'caches='+tf(typeof caches!=='undefined'?caches:undefined),'navigatorStorage='+tf(typeof navigator!=='undefined'?navigator.storage:undefined)].join(' '); });
+bomb('M-08', function(){ var s=''; try{ s=screen.width+'x'+screen.height+'@'+devicePixelRatio; }catch(e){ s='THREW'; } return 'screen='+s+' cores='+tv(function(){return navigator.hardwareConcurrency;})+' lang='+tv(function(){return (navigator.languages||[]).join('/');}); });
+// M-09 and M-10 exist because the SERVER caps a logged result at 400 characters:
+// M-03 was cut off mid-word at 'compre' and M-08 lost its tail. Splitting the
+// remaining items into their own short cases is cheaper than raising the cap, and
+// it keeps every line readable in the log. Compression matters here - a zlib-shaped
+// native surface is exactly the kind of thing that has produced real bugs.
+bomb('M-09', function(){ return 'CompressionStream='+tf(typeof CompressionStream!=='undefined'?CompressionStream:undefined)+' DecompressionStream='+tf(typeof DecompressionStream!=='undefined'?DecompressionStream:undefined)+' cryptoSubtle='+tf(typeof crypto!=='undefined'?crypto.subtle:undefined); });
+bomb('M-10', function(){ return 'createImageBitmap='+tf(typeof createImageBitmap!=='undefined'?createImageBitmap:undefined)+' Image='+tf(typeof Image!=='undefined'?Image:undefined)+' fonts='+tv(function(){return document.fonts?document.fonts.size:'none';})+' FontFaceLoad='+tf(typeof FontFace!=='undefined'?FontFace.prototype.load:undefined); });
+
+// ---------------------------------------------------------------- N: parser payloads
+// The census says the font parser, the image decoders and the compression code are
+// all reachable (FontFace.prototype.load, Image, createImageBitmap,
+// DecompressionStream). Those are PARSERS, not size arithmetic: the only way to
+// reach them is with bytes that lie about their own structure. Every payload here is
+// hand-built, tiny (well under 1 KiB), and malformed in one specific way, so the
+// parser has to walk it before it can refuse it. Nothing here decodes anything real.
+sec('N: parser payloads - hand-built containers that lie about their own structure');
+function b32(v){ return [(v>>>24)&0xff,(v>>>16)&0xff,(v>>>8)&0xff,v&0xff]; }
+function b16(v){ return [(v>>>8)&0xff,v&0xff]; }
+function ascii(s){ var o=[],i; for(i=0;i<s.length;i++)o.push(s.charCodeAt(i)&0xff); return o; }
+function cat(){ var out=[],i,j,a; for(i=0;i<arguments.length;i++){ a=arguments[i]; for(j=0;j<a.length;j++) out.push(a[j]&255); } return new Uint8Array(out); }
+function sfnt(tables, bogusNumTables){
+    var n=(bogusNumTables!==undefined)?bogusNumTables:tables.length, off=12+16*tables.length, out=[], i;
+    out=out.concat(b32(0x00010000), b16(n), [0,0,0,0,0,0]);
+    for(i=0;i<tables.length;i++){ out=out.concat(ascii(tables[i].tag), b32(0), b32(off), b32(tables[i].data.length)); off+=tables[i].data.length; }
+    for(i=0;i<tables.length;i++) out=out.concat(tables[i].data);
+    return new Uint8Array(out);
+}
+function pngChunk(type,data){ return cat(b32(data.length), ascii(type), data, [0,0,0,0]); }
+function payloadFont(bytes,label,mime){ return ['data:'+(mime||'font/ttf')+';base64,', btoa(String.fromCharCode.apply(null,bytes))].join(''); }
+// Every font case gets its OWN family name. With one shared family, a case that reports
+// LOADED could be rendering with a font an EARLIER case had already registered, and the
+// pixel readback would then be measuring the wrong font. Separate names cost nothing.
+async function tryFontSrc(fam, src){
+    var r='no FontFace';
+    if(typeof FontFace!=='undefined'){
+        try{
+            var ff=new FontFace(fam, 'url('+src+')');
+            r=await Promise.race([
+                ff.load().then(function(){ return 'LOADED'; }, function(e){ return 'rejected:'+((e&&e.name)||'?'); }),
+                sleep(1500).then(function(){ return 'timeout-1.5s'; })
+            ]);
+            if(r==='LOADED'){
+                try{ document.fonts.add(ff); }catch(e){}
+                var x=ctxOf(64,64); x.font='32px '+fam;
+                var m=x.measureText('Ag');
+                x.fillText('Ag',2,40);
+                // Count the INK over the whole canvas, not one byte in a corner. The first
+                // version read getImageData(0,0,8,8).data[0] - the top-left corner, while
+                // the glyph is drawn at x=2 with its baseline at y=40, so that byte is 0
+                // by construction. Both controls reported px=0 on 2026-10-08 11:22, which
+                // is what exposed it: a readback that cannot distinguish a drawn glyph
+                // from an empty canvas proves nothing about the glyph path.
+                var d=x.getImageData(0,0,64,64).data, ink=0;
+                for(var q=3;q<d.length;q+=4) if(d[q]) ink++;
+                r='LOADED w='+m.width.toFixed(1)+' ink='+ink;   // ink>0 = the glyph really drew
+            }
+        }catch(e){ r='THREW:'+((e&&e.name)||'?'); }
+    }
+    return r;
+}
+async function tryFont(label, bytes, mime){ return tryFontSrc('nf_'+String(label).replace(/[^A-Za-z0-9]/g,''), payloadFont(bytes,label,mime)); }
+async function tryImage(label, bytes, mime){
+    var r='no DOM';
+    try{
+        var blob=new Blob([bytes],{type:mime||'image/png'});
+        r=await Promise.race([
+            createImageBitmap(blob).then(function(bm){ var w=bm.width+'x'+bm.height; if(bm.close)bm.close(); return 'DECODED '+w; }, function(e){ return 'rejected:'+((e&&e.name)||'?'); }),
+            sleep(1500).then(function(){ return 'timeout-1.5s'; })
+        ]);
+    }catch(e){ r='THREW:'+((e&&e.name)||'?'); }
+    return r;
+}
+async function tryDecompress(format, bytes){
+    // The first cut of this leaked a REJECTED STREAM PROMISE and the dry run died on
+    // it (the harness printed a Z_DATA_ERROR crash and exited before any summary).
+    // A malformed deflate stream reports its failure on the stream, not at the call
+    // site, so a bare try/catch around write() does not see it. Every promise here is
+    // therefore settled inside its own catch: write, close and each read.
+    var r='no DecompressionStream';
+    if(typeof DecompressionStream!=='undefined'){
+        try{
+            var ds=new DecompressionStream(format);
+            var w=ds.writable.getWriter();
+            var wp=w.write(bytes)
+                     .then(function(){ return w.close(); })
+                     .catch(function(e){ return 'write-refused:'+((e&&e.name)||'?'); });
+            var chunks=[], reader=ds.readable.getReader();
+            var rp=(async function(){
+                try{
+                    var s;
+                    while(!(s=await reader.read()).done){ chunks.push(s.value.length); if(chunks.length>4) break; }
+                    return 'stream ok chunks='+chunks.join(',');
+                }catch(e){ return 'read-refused:'+((e&&e.name)||'?'); }
+            })();
+            r=await Promise.race([ rp, sleep(1500).then(function(){ return 'timeout-1.5s'; }) ]);
+            await wp;   // always settle the write promise, whatever the read did
+        }catch(e){ r='THREW:'+((e&&e.name)||'?'); }
+    }
+    return r;
+}
+async function payloadGroup(){
+    // --- the calibration that makes the font half of this section falsifiable --------
+    // Every font payload below travels as a data: URL. If THIS engine refuses data:
+    // URLs for fonts at the fetch layer, every font case would report NetworkError
+    // without one parser byte being read - a negative that would mean nothing at all.
+    // So two controls load a REAL font (Tahoma Bold, 58,532 bytes, served beside this
+    // page as _cal.ttf) down the two different roads. Both must say LOADED, and if
+    // either does not, the summary says so in as many words.
+    var CAL=null;
+    try{ var cr=await fetch('_cal.ttf'); CAL=new Uint8Array(await cr.arrayBuffer()); }catch(e){ CAL=null; }
+    info('calibration font: '+(CAL?('fetched '+CAL.length+' bytes from _cal.ttf'):'FETCH FAILED - the two font controls cannot run'));
+    var CTRL1='', CTRL2='';
+    var cases=[
+        ['N-C1 CONTROL real font over the wire - MUST say LOADED', function(){ if(!CAL) return 'no calibration font (the fetch failed)'; return tryFontSrc('nf_c1', '_cal.ttf'); }],
+        ['N-C2 CONTROL same real font through a data: URL - MUST say LOADED', function(){ if(!CAL) return 'no calibration font (the fetch failed)'; return tryFont('c2', CAL); }],
+        ['N-01 WOFF2 header, numTables 0xFFFF', function(){ return tryFont('n1', cat(ascii('wOF2'), b32(0x00010000), b32(48), b16(0xFFFF), b16(0), b32(0xFFFFFFFF), b32(0xFFFFFFFF), b32(0xFFFFFFFF), b32(0xFFFFFFFF), b32(0), b32(0), b32(0)), 'font/woff2'); }],
+        ['N-02 SFNT with bogus numTables', function(){ return tryFont('n2', sfnt([{tag:'head',data:new Uint8Array(54)}], 0xFFFF)); }],
+        ['N-03 glyf offset beyond the file', function(){ var g=new Uint8Array(16); g[0]=0xFF; return tryFont('n3', sfnt([{tag:'glyf',data:g},{tag:'loca',data:new Uint8Array(8)}])); }],
+        ['N-04 cmap format 4, segCountX2 0xFFFF', function(){ return tryFont('n4', sfnt([{tag:'cmap',data:cat(b16(0),b16(1),b16(4),b16(0),b32(12),b16(4),b16(0xFFFF),b16(0),b16(0),b16(0),b16(0),b16(0))}])); }],
+        ['N-05 SVG-in-OT with extreme viewBox', function(){ var s=ascii('<svg xmlns="http://www.w3.org/2000/svg"><g id="g1"><path d="M0 0L1e9 1e9z"/></g></svg>'); return tryFont('n5', sfnt([{tag:'SVG ',data:s}])); }],
+        ['N-06 PNG IHDR 0x7FFFFFFF square, no IDAT', function(){ return tryImage('n6', cat([0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A], pngChunk('IHDR', cat(b32(0x7FFFFFFF), b32(0x7FFFFFFF), [8,6,0,0,0])))); }],
+        ['N-07 PNG chunk length 0x7FFFFFFF', function(){ return tryImage('n7', cat([0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A], b32(0x7FFFFFFF), ascii('IDAT'), [0,0,0,0])); }],
+        ['N-08 GIF screen descriptor 0xFFFF', function(){ return tryImage('n8', cat(ascii('GIF89a'), b16(0xFFFF), b16(0xFFFF), [0xF7,0,0], ascii(';')), 'image/gif'); }],
+        ['N-09 WebP VP8X canvas 0xFFFFFF', function(){ return tryImage('n9', cat(ascii('RIFF'), b32(0x7FFFFFFF), ascii('WEBP'), ascii('VP8X'), b32(10), [0,0,0,0,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF]), 'image/webp'); }],
+        ['N-10 AVIF ftyp with a huge box size', function(){ return tryImage('n10', cat(b32(0xFFFFFFFF), ascii('ftyp'), ascii('avif'), b32(0), ascii('avif'), ascii('mif1')), 'image/avif'); }]
+    ];   // 12 entries: the two N-C controls first, then the 10 payloads N-01..N-10. N-10 was
+          // listed twice until 11:12 on 2026-10-08; a duplicate id means a duplicate BOMB line
+          // and an off-by-one case count, so it was removed.
+    for(var i=0;i<cases.length;i++){
+        var label=cases[i][0], fn=cases[i][1], id=label.split(' ')[0];
+        emit('c','TRY '+id); TRYS++;
+        var t0=P_NOW(), st='ok', det='';
+        try{ det=await fn(); }catch(e){ st='THREW:'+((e&&e.name)||'?'); NERR++; }
+        var ms=P_NOW()-t0;
+        if(ms>=1500){ st+=' SLOW'; NSLOW++; }
+        if(id==='N-C1') CTRL1=det; if(id==='N-C2') CTRL2=det;
+        releaseCvs();
+        var bad=checkSentinels();
+        if(bad.length){ st='HEAP-CORRUPT'; NCORRUPT++; emit('r','CORRUPTION after '+id+': '+bad.slice(0,3).join(' ~ ')); }
+        NB++; STATUS[id]=st;
+        emit('d','BOMB '+label+' status='+esc(st).slice(0,40)+' ms='+ms.toFixed(0)+' '+esc(det).slice(0,120));
+        if(bad.length===0) emit('d','OK '+id);
+        await sleep(20);
+    }
+    var okc1=/^LOADED/.test(String(CTRL1)), okc2=/^LOADED/.test(String(CTRL2));
+    if(okc1 && okc2){
+        info('FONT INSTRUMENT VALID this load: both controls loaded the real font, one over the wire and one through a data: URL. So a font case above reporting rejected:NetworkError was refused BY THE PARSER - the bytes reached it. The font half of section N counts.');
+    } else {
+        win('FONT INSTRUMENT INVALID this load: the controls answered ['+esc(CTRL1)+'] and ['+esc(CTRL2)+'] where both must say LOADED. The font payload cases above prove NOTHING on this load - only the image (N-06..N-10) and compression (N-11, N-12) halves of section N count.');
+    }
+}
+// Compression needs no DOM, so its two payloads run even in the dry run - which is
+// how they get a reference-engine value instead of only a hardware one.
+async function compressionGroup(){
+    var cases=[
+        ['N-11 deflate stream of 0xFF bytes', function(){ var a=new Uint8Array(64); for(var i=0;i<64;i++) a[i]=0xFF; return tryDecompress('deflate', a); }],
+        ['N-12 gzip header then garbage', function(){ var a=new Uint8Array(32); a[0]=0x1F; a[1]=0x8B; a[2]=8; for(var i=4;i<32;i++) a[i]=0xEE; return tryDecompress('gzip', a); }]
+    ];
+    for(var i=0;i<cases.length;i++){
+        var label=cases[i][0], fn=cases[i][1], id=label.split(' ')[0];
+        emit('c','TRY '+id); TRYS++;
+        var t0=P_NOW(), st='ok', det='';
+        try{ det=await fn(); }catch(e){ st='THREW:'+((e&&e.name)||'?'); NERR++; }
+        var ms=P_NOW()-t0;
+        var bad=checkSentinels();
+        if(bad.length){ st='HEAP-CORRUPT'; NCORRUPT++; emit('r','CORRUPTION after '+id+': '+bad.slice(0,3).join(' ~ ')); }
+        NB++; STATUS[id]=st;
+        emit('d','BOMB '+label+' status='+esc(st).slice(0,40)+' ms='+ms.toFixed(0)+' '+esc(det).slice(0,120));
+        if(bad.length===0) emit('d','OK '+id);
+        await sleep(20);
+    }
+}
+if(!HAS_DOM){ info('dry run without a DOM: the 10 N font and image payloads are not attempted here (they need FontFace and createImageBitmap)'); }
+else { await payloadGroup(); }
+if(typeof DecompressionStream!=='undefined'){ await compressionGroup(); }
+else { info('no DecompressionStream here: the 2 compression payload cases are skipped'); }
+
+// ---------------------------------------------------------------- main summary (posted BEFORE any heavy ask)
+sec('MAIN SUMMARY - every light case (SELFTEST, A, B, C, D, E, F) has now run');
+win('SUMMARY: '+NB+' cases, '+NCORRUPT+' heap-corruption, '+NERR+' threw, '+NSLOW+' slow');
+if(NCORRUPT){ win('CORRUPTION CASES: '+Object.keys(STATUS).filter(function(k){return STATUS[k].indexOf('CORRUPT')>=0;}).join(' ')); }
+info('Reading: HEAP-CORRUPT means a sentinel ArrayBuffer changed while a case ran - an out-of-bounds write somewhere.');
+info('Reading: a TRY line with no matching OK line is the case that killed the engine; reload the guide and read the last TRY.');
+info('Reading: THREW is the safe outcome (the implementation rejected the request). SLOW means a case took over 1.5 s.');
+info('Sentinel spray: '+(SENT_N*SENT_LEN)+' bytes across '+SENT_N+' buffers, re-verified after every case.');
+info('DOM available: '+HAS_DOM+'. A NO-DOM run only exercises the non-DOM cases.');
+info('Everything above is safely recorded. The heavy allocation group H starts next and may exhaust the console renderer - that is the point of it.');
+emit('g','ov_probe LIGHT SECTIONS COMPLETE - heavy group '+(HEAVY_OK?'ENABLED (?heavy=1) and starting now':'SKIPPED on this load (no ?heavy=1)'));
+
+// ---------------------------------------------------------------- H: the heavy tail, now OPT-IN
+// 2026-10-08, run of v2 on hardware: the log shows TWELVE page loads in the v2
+// window, three of them running at 10:06:32/39/43, and every one of them posted
+// TRY H-01 with no OK H-01. The 1 GiB canvas kills the renderer, the console
+// replaces the page with "there is not enough free system memory", and then the
+// browser reloads the page and tries again - so the page could never finish its
+// heavy group, and concurrent loads stacked more 1 GiB requests on top of each
+// other. Meanwhile NO G CASE HAS EVER RUN ON HARDWARE (grep 'BOMB G-' across the
+// whole log: zero), which means the byte-count boundary tests - the actual
+// hypothesis - have never been attempted. Fix: the heavy group is now opt-in via
+// ?heavy=1, so a plain load can never crash, and the order inside it puts the
+// byte-count cases first and the canvas controls last.
+sec('H: HEAVY TAIL - gated: it runs ONLY when the page is loaded with ?heavy=1');
+var Q=(typeof location!=='undefined')?String(location.search):'';
+var HEAVY_OK=/[?&]heavy=1/.test(Q);
+var CANVAS_OK=/[?&]canvas=1/.test(Q);
+var AGAIN= /[?&]again=1/.test(Q);
+var MARK='ov_probe_heavy_attempted';
+function lsGet(k){ try{ return window.localStorage?window.localStorage.getItem(k):null; }catch(e){ return null; } }
+function lsSet(k,v){ try{ if(window.localStorage) window.localStorage.setItem(k,v); }catch(e){} }
+var ATTEMPTED=lsGet(MARK);
+if(HEAVY_OK && ATTEMPTED && !AGAIN){
+    HEAVY_OK=false;
+    info('HEAVY TAIL NOT RUN AGAIN: this browser already attempted it once. That is deliberate. The console shows "there is not enough free system memory", the browser reloads the SAME URL, and without this marker it would ask for 1-4 GiB again and die again, forever - which is exactly the loop that was observed. The light results above are unaffected. To try once more, follow the link at the end of this run: it carries &again=1.');
+}
+if(!HEAVY_OK){
+    info('HEAVY TAIL SKIPPED on this load. Those cases ask for 1-4 GiB; the canvas controls among them have killed this browser before. Everything above is complete either way.');
+} else {
+    lsSet(MARK,String(Date.now()));   // set BEFORE the cases run, so a crash part way through still counts as attempted
+    info('HEAVY TAIL ENABLED by ?heavy=1. Canvas stage is '+(CANVAS_OK?'ALSO enabled (&canvas=1)':'NOT enabled - it needs a separate &canvas=1')+'. Order is by hypothesis value: the 2^31 and 2^32 byte-count cases first, the canvas controls LAST.');
+}
+async function heavy(id, bytes, what, fn){
+    emit('c','TRY '+id);
+    TRYS++;
+    emit('c','MEMREQ '+id+' asks for '+(bytes/1048576).toFixed(1)+' MiB ('+bytes+' bytes) - '+what);
+    var t0=P_NOW(), st='ok', det='';
+    try{ det=String(fn()); }
+    catch(e){ st='THREW:'+((e&&e.name)||'?'); NERR++; }
+    var ms=P_NOW()-t0;
+    if(ms>=1500){ st+=' SLOW'; NSLOW++; }
+    var bad=checkSentinels();
+    if(bad.length){ st='HEAP-CORRUPT'; NCORRUPT++; emit('r','CORRUPTION after '+id+': '+bad.slice(0,3).join(' ~ ')); }
+    NB++; STATUS[id]=st;
+    emit('d','BOMB '+id+' status='+esc(st).slice(0,60)+' ms='+ms.toFixed(0)+' '+(det?esc(det).slice(0,150):''));
+    if(bad.length===0) emit('d','OK '+id);
+    return st;
+}
+function heavyCanvas(id,w,h){
+    return heavy(id, w*h*4, 'canvas '+w+'x'+h, function(){
+        var c=cvs(w,h), x=c.getContext('2d');
+        x.fillStyle='#f00'; x.fillRect(0,0,w,h);
+        var out=c.width+'x'+c.height+' px='+x.getImageData(0,0,1,1).data[0];
+        try{ c.width=0; c.height=0; }catch(e){}   // release the backing store at once: stacking two 1 GiB canvases is what killed run 4
+        return out;
+    });
+}
+// The fatal cases are GONE, and the measurement is why. TRY G-02 was posted at
+// 10:16:00, 10:24:24 and 10:24:29, and NOT ONE of the three ever produced a
+// MEMREQ, a BOMB or an OK - while the light run in the same session completed
+// three times. G-02 was new ArrayBuffer(0x7FFFFFFF), 2 GiB. Three attempts,
+// three instant deaths: this engine COMMITS what you ask it for, so a request
+// past the ceiling does not return an error, it takes the browser with it. The
+// same load, 10:23:05, proves the storage marker cannot save us either - it said
+// ENABLED on a load where the marker had already been written, so localStorage is
+// not persisting in the console browser. Protection therefore has to be
+// structural: no case in this group may ask for more than the browser can give.
+// The 2^31 / 2^32 boundary question is answered in full by section J, which asks
+// it through APIs that clamp or throw and needs no memory at all.
+// What is left is a RAMP: 64 / 128 / 256 / 512 MiB, each released before the next,
+// which measures how much the browser will actually hand out without ever asking
+// for a size already known to be fatal.
+var HEAVY=[
+    ['G-11', function(){ return new ArrayBuffer(0x04000000).byteLength; }, 0x04000000, 'ArrayBuffer 64 MiB - ramp step 1'],
+    ['G-12', function(){ return new ArrayBuffer(0x08000000).byteLength; }, 0x08000000, 'ArrayBuffer 128 MiB - ramp step 2'],
+    ['G-13', function(){ return new ArrayBuffer(0x10000000).byteLength; }, 0x10000000, 'ArrayBuffer 256 MiB - ramp step 3'],
+    ['G-14', function(){ return new ArrayBuffer(0x20000000).byteLength; }, 0x20000000, 'ArrayBuffer 512 MiB - ramp step 4'],
+    ['G-15', function(){ var u=new Uint8Array(0x20000000); return u.length; }, 0x20000000, 'Uint8Array 512 MiB - the allocating view form, one step below the fatal 2 GiB'],
+    ['G-16', function(){ return 'x'.repeat(0x04000000).length; }, 0x04000000, 'string, 64 MiB of units'],
+    ['G-07', function(){ var a=new Uint8Array(16); var b=a.subarray(8,1); return b.length; }, 16, 'control: inverted subarray range'],
+    ['G-08', function(){ var a=new Uint8Array(16); return a.slice(-1e9,1e9).length; }, 16, 'control: slice with extreme negative indices'],
+    ['G-06', function(){ var s='ab'.repeat(1e6); return s.length+s.indexOf('ba'); }, 2000000, 'control: 2M-unit string search']
+];
+if(!HEAVY_OK){
+    info('heavy group not attempted on this load. Section J above already tested the same 2^31 and 2^32 boundaries through clamping APIs, with no allocation.');
+} else {
+    for(var hh=0; hh<HEAVY.length; hh++){
+        await heavy(HEAVY[hh][0], HEAVY[hh][2], HEAVY[hh][3], HEAVY[hh][1]);
+        await sleep(500);
+    }
+    if(HAS_DOM && CANVAS_OK){
+        await heavyCanvas('H-03',8192,8192); await sleep(500);   // 256 MiB canvas - measured on hardware: ok, ms=39, pixel readback 255, so it really is allocated AND drawn
+    } else if(HAS_DOM){
+        info('the canvas stage did NOT run on this load. H-01 (a 1 GiB canvas) is DELETED from this page for the same reason G-02 and G-03 were: it was measured killing this renderer six times, and nothing is left to learn from it. Add &canvas=1 to run the 256 MiB canvas, which is known to be safe.');
+    } else { info('canvas stage skipped: no DOM, so no canvas'); }
+}
+
+// ---------------------------------------------------------------- final summary
+sec('FINAL SUMMARY - light sections plus the heavy tail');
+win('SUMMARY: '+NB+' cases, '+NCORRUPT+' heap-corruption, '+NERR+' threw, '+NSLOW+' slow');
+if(NCORRUPT){ win('CORRUPTION CASES: '+Object.keys(STATUS).filter(function(k){return STATUS[k].indexOf('CORRUPT')>=0;}).join(' ')); }
+emit('g','ov_probe DONE');
+if(HAS_DOM && document.body && document.createElement){
+    // one click, no URL typing: the console browser can follow a same-page link
+    var lh=null, lt=null;
+    if(!HEAVY_OK){
+        lh='?heavy=1'+(ATTEMPTED?'&again=1':'');
+        lt='>>> CLICK TO RUN THE HEAVY GROUP: the 2^31 and 2^32 byte-count cases (1 to 4 GiB requests, no canvas) <<<';
+    } else if(!CANVAS_OK){
+        lh='?heavy=1&canvas=1&again=1';
+        lt='>>> OPTIONAL CANVAS STAGE, last and now safe: one 256 MiB canvas. The two 1 GiB canvases are DELETED from this page <<<';
+    }
+    if(lh){
+        var ha=document.createElement('a');
+        ha.href=lh;
+        ha.textContent=lt;
+        ha.style.cssText='display:block;margin:14px 0;padding:10px;border:2px solid #0f0;color:#0ff;font-size:15px;text-decoration:none';
+        document.body.appendChild(ha);
+        emit('g','heavy-group link added: '+lh);
+    }
+}
+fetch('/report',{method:'POST',body:JSON.stringify({id:'_done',text:'ov_probe complete'}),headers:{'Content-Type':'application/json'}}).catch(function(){});
+
+}).catch(function(e){
+    emit('r','MAIN ERR: '+e.message);
+    fetch('/result',{method:'POST',body:JSON.stringify({tag:'r',msg:'MAIN ERR:'+e.message}),headers:{'Content-Type':'application/json'}}).catch(function(){});
+});
+</script></body></html>
