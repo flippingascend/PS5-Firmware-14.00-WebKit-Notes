@@ -2835,3 +2835,42 @@ chain candidate, with the reason (the one unchecked read needs a capture whose s
 end, and ~1,300 cases never produced one); the useful half of that family is the false positives,
 not the missed matches; and the memory negative comes from a write-only instrument that cannot
 see a read or a write outside the sprayed region.
+================================================================================
+## THE PACKAGE IS PUBLISHED, AND ONE FILE WAS QUIETLY TWO FILES (2026-10-08, 12:2x)
+================================================================================
+
+The package is now a repository: github.com/flippingascend/PS5-Firmware-14.00-WebKit-Notes,
+first commit `ef1a1a6`, 18 files, LICENSE (MIT), .gitignore and .gitattributes added. The tree at
+../ps5-fw14-webkit-notes is the working copy of that repo, and _pack_build.py now steps over .git
+when it clears the tree and when it builds the manifest.
+
+### The correction: ps5_server.py existed with two different hashes
+
+ps5_server.py was a CRLF file (779 CRs, 32,706 bytes, md5 020f24edc21498fadc0466f4e6969f78).
+Git normalised it on staging to LF (31,927 bytes, md5 d7276f7b59e24c9f89f0874f9ba0eb69), so the
+zip would have said one hash for that file while a clone computed another - the repository failing
+its own manifest check, on the one file nobody would think to re-check. Both sides are now LF: the
+package builder rewrites every emitted file to LF and verifies that the result contains no CR, and
+.gitattributes pins eol=lf so a Windows checkout cannot reintroduce them.
+
+Consequence to state plainly: the packaged copy of the server is no longer byte-for-byte the file
+that is running (that one is still CRLF), it is the same file modulo line endings. The server's
+behaviour and every number in the evidence are unaffected - Python does not care, and the evidence
+is the log the running instance wrote.
+
+### Two bugs in the builder, both surfaced by putting a repo inside the package
+
+* The manifest walk swept up .git's objects, which are not package contents and carry CRLF
+  payloads of their own; the CR check therefore failed on 25 git objects. The walk now skips .git.
+* Clearing the tree deleted LICENSE, .gitignore and .gitattributes, because the builder only wrote
+  the files it knew about. They are now part of the build from _pack/, so a rebuild restores them
+  and git does not see them as deleted.
+
+Both are now checks rather than assumptions: the build prints a CR check over every emitted file
+and a trace scan over the same set, and refuses to be quiet if either is unhappy.
+
+### Repo verification after the push
+
+`git ls-remote origin` returned `ef1a1a6` for both HEAD and refs/heads/main, matching the local
+commit, and every committed blob was verified equal to the file on disk by hash - except the one
+file whose line endings the second commit fixes.

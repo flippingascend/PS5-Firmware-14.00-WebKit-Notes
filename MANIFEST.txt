@@ -1,12 +1,15 @@
 md5                              bytes   file
+6858b5027c6957e1ac2ef0046de8fc80      280  .gitattributes
+b1410589d6289d955d191420de7697ae      149  .gitignore
 87a474d6f7167e28da7c0bcf4fe92563    11188  FINDINGS.md
+8eca1c8807ec3d372f71eecad5eea8bc     1071  LICENSE
 49b33d9f66875dd8760e25270e9bd82d     4001  README.md
 bcc90874b921206a1de1605f4a0f8cc6      171  evidence/console.txt
 1a05af9c4824d78bef9d4a9f73026bda    54946  evidence/run-fw14-0933.txt
-1cc62dce6acd29b9779d632437e75a1a   179064  notes/RESEARCH_STATE.md
+ce6dea40b1741d152f859af0b2da6c31   181589  notes/RESEARCH_STATE.md
 a7f5ca06ce912f59d7e56889b4cdf225     1671  posts/X_POST.txt
 dbc12fb909f1fc33620273478b6c3839     3605  server/SERVER.md
-020f24edc21498fadc0466f4e6969f78    32706  server/ps5_server.py
+d7276f7b59e24c9f89f0874f9ba0eb69    31927  server/ps5_server.py
 bd6bcf9a5ec08efe94354222877f696d    16442  tools/_mk_census.py
 c9051062b912ceb8f887ef217b153aa8    14578  tools/_u_cases.json
 86e4b8ae63f19430ca3c275bedc363d1     8202  tools/_u_hw_all.json
